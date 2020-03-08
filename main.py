@@ -6,12 +6,6 @@ from typing import List
 
 
 # Domains
-
-@dataclasses.dataclass(frozen=True)
-class SourceCodeAST:
-    _ast: ast.Module
-
-
 @dataclasses.dataclass(frozen=True)
 class ModulePath:
     _path: str
@@ -20,6 +14,29 @@ class ModulePath:
 @dataclasses.dataclass(frozen=True)
 class ImportModule:
     module_path: ModulePath
+
+
+@dataclasses.dataclass(frozen=True)
+class SourceCodeAST:
+    _ast: ast.Module
+
+    @dataclasses.dataclass
+    class ImportVisitor(ast.NodeVisitor):
+        imports: List[ast.Import] = dataclasses.field(default_factory=list)
+
+        def visit_Import(self, node):
+            self.imports.append(node)
+
+    def get_imports(self) -> List[ImportModule]:
+        visitor = self.ImportVisitor()
+        visitor.visit(self._ast)
+
+        names = []
+        for import_node in visitor.imports:
+            for name_alias in import_node.names:
+                names.append(name_alias.name)
+
+        return [ImportModule(module_path=ModulePath(_path=name)) for name in names]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -49,8 +66,11 @@ class SourceCodeCollectRequest:
         return SourceCode(
             file=self.file,
             ast=self.ast,
-            import_modules=ImportModuleCollection([]),  # TODO
+            import_modules= self._build_import_module_collection(),
         )
+
+    def _build_import_module_collection(self):
+        return ImportModuleCollection(self.ast.get_imports())
 
 
 # Applications & Infrastructures
