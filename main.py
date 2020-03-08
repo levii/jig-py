@@ -1,4 +1,5 @@
 import dataclasses
+import os
 import sys
 from typing import List
 
@@ -42,10 +43,12 @@ class SourceCode:
 
 class SourceCodeCollector:
     def collect(self, target_path: str) -> SourceCode:
+        # TODO: target_path が存在するかチェック
+
         return SourceCode(
             file=SourceFile(
                 path=target_path,
-                size=0,
+                size=os.path.getsize(target_path),
             ),
             ast=SourceCodeAST(),
             import_modules=ImportModuleCollection([])
