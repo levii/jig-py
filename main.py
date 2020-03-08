@@ -1,3 +1,4 @@
+import ast
 import dataclasses
 import os
 import sys
@@ -8,7 +9,7 @@ from typing import List
 
 @dataclasses.dataclass(frozen=True)
 class SourceCodeAST:
-    pass
+    _ast: ast.Module
 
 
 @dataclasses.dataclass(frozen=True)
@@ -39,20 +40,35 @@ class SourceCode:
     import_modules: ImportModuleCollection
 
 
+@dataclasses.dataclass(frozen=True)
+class SourceCodeCollectRequest:
+    file: SourceFile
+    ast: SourceCodeAST
+
+    def build(self) -> SourceCode:
+        return SourceCode(
+            file=self.file,
+            ast=self.ast,
+            import_modules=ImportModuleCollection([]),  # TODO
+        )
+
+
 # Applications & Infrastructures
 
 class SourceCodeCollector:
     def collect(self, target_path: str) -> SourceCode:
         # TODO: target_path が存在するかチェック
 
-        return SourceCode(
+        source = open(target_path).read()
+        tree = ast.parse(source=source, filename=os.path.basename(target_path))
+
+        return SourceCodeCollectRequest(
             file=SourceFile(
                 path=target_path,
                 size=os.path.getsize(target_path),
             ),
-            ast=SourceCodeAST(),
-            import_modules=ImportModuleCollection([])
-        )
+            ast=SourceCodeAST(_ast=tree),
+        ).build()
 
 
 def collect(target_path: str) -> SourceCode:
