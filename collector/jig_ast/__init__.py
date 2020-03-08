@@ -1,5 +1,5 @@
-import ast
 import dataclasses
+from typed_ast import ast3 as ast
 from typing import List, Optional
 
 
