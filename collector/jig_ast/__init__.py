@@ -25,9 +25,16 @@ class JigAST:
         def visit_Import(self, node):
             self.imports.append(node)
 
-    def get_imports(self) -> List[ast.Import]:
+    def imports(self) -> List[Import]:
         visitor = self.ImportVisitor()
         visitor.visit(self._ast)
 
-        return visitor.imports
+        imports = []
+        for import_node in visitor.imports:
+            names = []
+            for name_alias in import_node.names:
+                names.append(Alias(name=name_alias.name, asname=name_alias.asname))
+            imports.append(Import(names=names))
+
+        return imports
 
