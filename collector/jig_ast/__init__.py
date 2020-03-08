@@ -4,17 +4,18 @@ from typing import List, Optional
 
 
 @dataclasses.dataclass(frozen=True)
-class Import:
-    names: List[ast.alias]
-
-
 class Alias:
     name: str
     asname: Optional[str]
 
 
 @dataclasses.dataclass(frozen=True)
-class AST:
+class Import:
+    names: List[Alias]
+
+
+@dataclasses.dataclass(frozen=True)
+class JigAST:
     _ast: ast.Module
 
     @dataclasses.dataclass
