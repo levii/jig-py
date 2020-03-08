@@ -18,6 +18,11 @@ class Import:
 class JigAST:
     _ast: ast.Module
 
+    @classmethod
+    def parse(cls, source, filename: str = '<unknown>') -> "JigAST":
+        tree = ast.parse(source=source, filename=filename)
+        return cls(tree)
+
     @dataclasses.dataclass
     class ImportVisitor(ast.NodeVisitor):
         imports: List[ast.Import] = dataclasses.field(default_factory=list)
