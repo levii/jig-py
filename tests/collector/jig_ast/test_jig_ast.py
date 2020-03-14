@@ -1,5 +1,5 @@
-from collector.jig_ast import Import
-from collector.jig_ast import JigAST
+from jig.collector.jig_ast import Import
+from jig.collector.jig_ast import JigAST
 
 
 class TestJigASTImport:
