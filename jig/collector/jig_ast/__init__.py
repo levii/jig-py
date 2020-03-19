@@ -16,7 +16,7 @@ class Import:
 
 @dataclasses.dataclass(frozen=True)
 class JigAST:
-    _ast: ast.Module
+    _ast: ast.AST
 
     @classmethod
     def parse(cls, source, filename: str = "<unknown>") -> "JigAST":
