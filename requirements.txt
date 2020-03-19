@@ -2,3 +2,4 @@ typed_ast
 pytest
 flake8
 black
+mypy
