@@ -13,9 +13,7 @@ class SourceCodeCollector:
 
         return SourceCodeCollectRequest(
             file=SourceFile(
-                path=target_path,
-                content=source,
-                size=os.path.getsize(target_path),
+                path=target_path, content=source, size=os.path.getsize(target_path),
             ),
         ).build()
 

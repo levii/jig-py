@@ -37,9 +37,7 @@ class SourceCodeAST:
 
     @classmethod
     def build(cls, source: SourceFile):
-        return cls(
-            _ast=JigAST.parse(source=source.content, filename=source.filename)
-        )
+        return cls(_ast=JigAST.parse(source=source.content, filename=source.filename))
 
     def get_imports(self) -> ImportModuleCollection:
         imports = []
@@ -63,8 +61,4 @@ class SourceCodeCollectRequest:
 
     def build(self) -> SourceCode:
         ast = SourceCodeAST.build(self.file)
-        return SourceCode(
-            file=self.file,
-            ast=ast,
-            import_modules=ast.get_imports(),
-        )
+        return SourceCode(file=self.file, ast=ast, import_modules=ast.get_imports(),)
