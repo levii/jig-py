@@ -21,3 +21,18 @@ build: clean
 .PHONY: clean
 clean:
 	rm -rf $(subst -,_,${package_name}).egg-info dist build
+
+.PHONY: mypy
+mypy:
+	${server_runner} mypy main.py jig/
+
+.PHONY: black
+black:
+	${server_runner} black main.py jig/ tests/
+
+.PHONY: flake8
+flake8:
+	${server_runner} flake8 main.py jig/ tests/
+
+.PHONY: check
+check: mypy black flake8
