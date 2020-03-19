@@ -2,3 +2,5 @@ typed_ast
 pytest
 flake8
 black
+mypy
+lxml  # for mypy reporting
