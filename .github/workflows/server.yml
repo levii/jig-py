@@ -1,0 +1,73 @@
+name: Jig-py
+
+on: [push]
+
+jobs:
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Install dependencies
+      run: |
+        python -m pip install pip
+        pip install mypy lxml
+    - name: Lint with mypy
+      run: |
+        mypy main.py jig
+    - uses: actions/upload-artifact@master
+      if: always()
+      with:
+        name: reports
+        path: ./reports
+
+  black:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          python -m pip install pip
+          pip install black
+      - name: Lint with black
+        run: |
+          black --diff --check main.py jig/ tests/
+
+  flake8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          python -m pip install pip
+          pip install flake8
+      - name: Lint with flake8
+        run: |
+          flake8 main.py jig/ tests/
+
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - name: Install dependencies
+        run: |
+          python -m pip install pip
+          pip install -r requirements.txt
+      - name: pytest
+        run: |
+          pytest
