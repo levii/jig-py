@@ -2,7 +2,7 @@ import dataclasses
 import os
 from typing import List
 
-from jig.collector.jig_ast import JigAST, ImportFrom
+from jig.collector.jig_ast import JigAST, ImportFrom, Import
 
 
 @dataclasses.dataclass(frozen=True)
@@ -17,7 +17,7 @@ class ImportModule:
 
 @dataclasses.dataclass(frozen=True)
 class ImportModuleCollection:
-    _modules: List[ImportModule]
+    _modules: List[ImportModule] = dataclasses.field(default_factory=list)
 
     def __len__(self) -> int:
         return len(self._modules)
@@ -25,13 +25,24 @@ class ImportModuleCollection:
     def __contains__(self, item: ImportModule):
         return item in self._modules
 
-    # TODO: root_path, current_path をドメインオブジェクトにする
+    def __add__(self, other: "ImportModuleCollection") -> "ImportModuleCollection":
+        return ImportModuleCollection(self._modules + other._modules)
+
+    @classmethod
+    def build_by_import_ast(cls, import_ast: Import) -> "ImportModuleCollection":
+        imports = [
+            ImportModule(module_path=ModulePath(_path=name.name))
+            for name in import_ast.names
+        ]
+
+        return ImportModuleCollection(imports)
+
     @classmethod
     def build_by_import_from_ast(
-        cls, root_path: str, current_path: str, import_from: ImportFrom
+        cls, root_path: str, file_path: str, import_from: ImportFrom
     ) -> "ImportModuleCollection":
         level = import_from.level if import_from.level is not None else 0
-        prefix = cls._get_path_prefix(root_path, current_path, level)
+        prefix = cls._get_path_prefix(root_path, file_path, level)
 
         imports = []
         for alias in import_from.names:
@@ -49,11 +60,11 @@ class ImportModuleCollection:
         return cls(_modules=imports)
 
     @classmethod
-    def _get_path_prefix(cls, root_path: str, current_path: str, level: int):
+    def _get_path_prefix(cls, root_path: str, file_path: str, level: int):
         if level < 1:
             return None
 
-        relative_path = os.path.relpath(current_path, root_path)
+        relative_path = os.path.relpath(file_path, root_path)
 
         path_list = relative_path.split(os.sep)
 
@@ -75,20 +86,29 @@ class SourceFile:
 @dataclasses.dataclass(frozen=True)
 class SourceCodeAST:
     _ast: JigAST
+    _source: SourceFile
+    _root_path: str
 
     @classmethod
-    def build(cls, source: SourceFile):
-        return cls(_ast=JigAST.parse(source=source.content, filename=source.filename))
+    def build(cls, root_path: str, source: SourceFile):
+        return cls(
+            _root_path=root_path,
+            _source=source,
+            _ast=JigAST.parse(source=source.content, filename=source.filename),
+        )
 
     def get_imports(self) -> ImportModuleCollection:
-        imports = []
-        for import_node in self._ast.imports():
-            for name in import_node.names:
-                imports.append(ImportModule(module_path=ModulePath(_path=name.name)))
+        import_modules = ImportModuleCollection()
 
-        # TODO: ImportFromも取得してがっちゃんこする
+        for import_ast in self._ast.imports():
+            import_modules += ImportModuleCollection.build_by_import_ast(import_ast)
 
-        return ImportModuleCollection(imports)
+        for import_from_ast in self._ast.import_froms():
+            import_modules += ImportModuleCollection.build_by_import_from_ast(
+                self._root_path, self._source.path, import_from_ast
+            )
+
+        return import_modules
 
 
 @dataclasses.dataclass(frozen=True)
@@ -100,8 +120,9 @@ class SourceCode:
 
 @dataclasses.dataclass(frozen=True)
 class SourceCodeCollectRequest:
+    root_path: str
     file: SourceFile
 
     def build(self) -> SourceCode:
-        ast = SourceCodeAST.build(self.file)
+        ast = SourceCodeAST.build(self.root_path, self.file)
         return SourceCode(file=self.file, ast=ast, import_modules=ast.get_imports(),)
