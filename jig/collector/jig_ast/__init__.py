@@ -22,9 +22,18 @@ class ImportFrom:
     level: fromのインポートレベル。'from os' => 0, 'from .' => 1, 'from ..' => 2
            levelがNoneになる条件は不明だが、ドキュメントの定義に合わせてOptional型で定義している
     """
+
     module: Optional[str]
     names: List[Alias]
     level: Optional[int]
+
+    @classmethod
+    def from_ast(cls, import_from: ast.ImportFrom) -> "ImportFrom":
+        names = [
+            Alias(name=alias.name, asname=alias.asname) for alias in import_from.names
+        ]
+
+        return cls(module=import_from.module, names=names, level=import_from.level)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -66,8 +75,13 @@ class JigAST:
 
         nodes = []
         for from_node in visitor.import_froms:
-            names = [Alias(name=name_alias.name, asname=name_alias.asname) for name_alias in from_node.names]
+            names = [
+                Alias(name=name_alias.name, asname=name_alias.asname)
+                for name_alias in from_node.names
+            ]
 
-            nodes.append(ImportFrom(module=from_node.module, names=names, level=from_node.level))
+            nodes.append(
+                ImportFrom(module=from_node.module, names=names, level=from_node.level)
+            )
 
         return nodes
