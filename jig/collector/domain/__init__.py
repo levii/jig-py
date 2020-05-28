@@ -110,6 +110,9 @@ class SourceCodeAST:
 
         return import_modules
 
+    def get_class_defs(self):
+        return self._ast.class_defs()
+
 
 @dataclasses.dataclass(frozen=True)
 class SourceCode:

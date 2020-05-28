@@ -1,5 +1,6 @@
 import dataclasses
 import os
+from typing import List
 
 from jig.collector.domain import SourceCode
 from jig.collector.domain import SourceCodeCollectRequest
@@ -21,6 +22,17 @@ class SourceCodeCollector:
                 path=target_path, content=source, size=os.path.getsize(target_path),
             ),
         ).build()
+
+    def collect_directories(self) -> List[SourceCode]:
+        result: List[SourceCode] = []
+        for curDir, dirs, files in os.walk(os.path.join(self.root_path, 'jig')):
+            for file in files:
+                if not file.endswith('.py'):
+                    continue
+                file_path = os.path.join(curDir, file)
+                result.append(self.collect(file_path))
+
+        return result
 
 
 def collect(root_path: str, target_path: str) -> SourceCode:
