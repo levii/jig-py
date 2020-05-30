@@ -9,3 +9,5 @@ if __name__ == "__main__":
 
     result = collect(root_path=root_path, target_path=sys.argv[1])
     print(result)
+
+    print(result.module_dependencies(["jig"]))

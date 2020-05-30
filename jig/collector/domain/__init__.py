@@ -1,6 +1,6 @@
 import dataclasses
 import os
-from typing import List
+from typing import List, Tuple
 
 from jig.collector.jig_ast import JigSourceCode
 from jig.collector.jig_ast import ClassDef
@@ -68,6 +68,14 @@ class ModulePath:
 
         return cls(module_path)
 
+    def match_module_names(self, module_names: List[str]) -> bool:
+        return any(
+            [self.match_module_name(module_name) for module_name in module_names]
+        )
+
+    def match_module_name(self, module_name: str) -> bool:
+        return self.path == module_name or self.path.startswith(module_name + ".")
+
 
 @dataclasses.dataclass(frozen=True)
 class ImportModule:
@@ -86,6 +94,9 @@ class ImportModuleCollection:
 
     def __add__(self, other: "ImportModuleCollection") -> "ImportModuleCollection":
         return ImportModuleCollection(self._modules + other._modules)
+
+    def __iter__(self):
+        return self._modules.__iter__()
 
     @classmethod
     def build_by_import_ast(cls, import_ast: Import) -> "ImportModuleCollection":
@@ -156,6 +167,14 @@ class SourceCode:
             import_modules=cls._build_import_modules(file, jig_source_code),
             class_defs=jig_source_code.class_defs,
         )
+
+    def module_dependencies(self, module_names: List[str]) -> List[Tuple[str, str]]:
+        dependencies = []
+        for module in self.import_modules:
+            if module.module_path.match_module_names(module_names):
+                dependencies.append((self.module_path.path, module.module_path.path))
+
+        return dependencies
 
     @classmethod
     def _build_import_modules(
