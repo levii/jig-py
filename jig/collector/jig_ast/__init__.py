@@ -1,6 +1,6 @@
 import dataclasses
 from typed_ast import ast3 as ast
-from typing import List, Optional
+from typing import List, Optional, Any
 
 
 @dataclasses.dataclass(frozen=True)
@@ -85,3 +85,16 @@ class JigAST:
             )
 
         return nodes
+
+    @dataclasses.dataclass
+    class ClassDefVisitor(ast.NodeVisitor):
+        class_defs: List[ast.ClassDef] = dataclasses.field(default_factory=list)
+
+        def visit_ClassDef(self, node):
+            self.class_defs.append(node)
+
+    def class_defs(self) -> List[Any]:
+        visitor = self.ClassDefVisitor()
+        visitor.visit(self._ast)
+
+        return [class_def.name for class_def in visitor.class_defs]
