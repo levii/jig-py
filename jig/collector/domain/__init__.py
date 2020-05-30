@@ -6,6 +6,26 @@ from jig.collector.jig_ast import JigAST, ImportFrom, Import
 
 
 @dataclasses.dataclass(frozen=True)
+class FilePath:
+    root_path: str
+    relative_path: str
+
+    @property
+    def abspath(self) -> str:
+        return os.path.join(self.root_path, self.relative_path)
+
+    @property
+    def filename(self):
+        return os.path.basename(self.relative_path)
+
+    @classmethod
+    def build_with_abspath(cls, root_path: str, abspath: str) -> "FilePath":
+        return cls(
+            root_path=root_path, relative_path=os.path.relpath(abspath, start=root_path)
+        )
+
+
+@dataclasses.dataclass(frozen=True)
 class ModulePath:
     _path: str
 
@@ -74,13 +94,13 @@ class ImportModuleCollection:
 
 @dataclasses.dataclass(frozen=True)
 class SourceFile:
-    path: str
+    path: FilePath
     size: int
     content: str = dataclasses.field(repr=False)
 
     @property
     def filename(self):
-        return os.path.basename(self.path)
+        return self.path.filename
 
 
 @dataclasses.dataclass(frozen=True)
@@ -105,7 +125,7 @@ class SourceCodeAST:
 
         for import_from_ast in self._ast.import_froms():
             import_modules += ImportModuleCollection.build_by_import_from_ast(
-                self._root_path, self._source.path, import_from_ast
+                self._root_path, self._source.path.abspath, import_from_ast
             )
 
         return import_modules
