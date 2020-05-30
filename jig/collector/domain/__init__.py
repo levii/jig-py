@@ -75,8 +75,8 @@ class ImportModuleCollection:
 @dataclasses.dataclass(frozen=True)
 class SourceFile:
     path: str
-    content: str
     size: int
+    content: str = dataclasses.field(repr=False)
 
     @property
     def filename(self):
