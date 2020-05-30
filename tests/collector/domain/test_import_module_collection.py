@@ -1,3 +1,4 @@
+from jig.collector.domain import FilePath
 from jig.collector.domain import ImportModule, ModulePath, ImportModuleCollection
 from .helper import parse_import_from
 
@@ -5,12 +6,13 @@ from .helper import parse_import_from
 class TestImportModuleCollectionBuildByImportFromAST:
     ROOT_PATH = "/jig-py"
     CURRENT_PATH = "/jig-py/jig/collector/domain/__init__.py"
+    FILE_PATH = FilePath.build_with_abspath(root_path=ROOT_PATH, abspath=CURRENT_PATH)
 
     def test_builtin_module(self):
         import_from = parse_import_from("from os import path")
 
         import_modules = ImportModuleCollection.build_by_import_from_ast(
-            self.ROOT_PATH, self.CURRENT_PATH, import_from
+            file_path=self.FILE_PATH, import_from=import_from
         )
 
         assert len(import_modules) == 1
@@ -20,7 +22,7 @@ class TestImportModuleCollectionBuildByImportFromAST:
         import_from = parse_import_from("from datetime import datetime, timezone")
 
         import_modules = ImportModuleCollection.build_by_import_from_ast(
-            self.ROOT_PATH, self.CURRENT_PATH, import_from
+            file_path=self.FILE_PATH, import_from=import_from
         )
 
         assert len(import_modules) == 2
@@ -31,7 +33,7 @@ class TestImportModuleCollectionBuildByImportFromAST:
         import_from = parse_import_from("from typed_ast import ast3 as ast")
 
         import_modules = ImportModuleCollection.build_by_import_from_ast(
-            self.ROOT_PATH, self.CURRENT_PATH, import_from
+            file_path=self.FILE_PATH, import_from=import_from
         )
 
         assert len(import_modules) == 1
@@ -41,7 +43,7 @@ class TestImportModuleCollectionBuildByImportFromAST:
         import_from = parse_import_from("from . import sibling")
 
         import_modules = ImportModuleCollection.build_by_import_from_ast(
-            self.ROOT_PATH, self.CURRENT_PATH, import_from
+            file_path=self.FILE_PATH, import_from=import_from
         )
 
         assert len(import_modules) == 1
@@ -53,7 +55,7 @@ class TestImportModuleCollectionBuildByImportFromAST:
         import_from = parse_import_from("from .sibling import submodule")
 
         import_modules = ImportModuleCollection.build_by_import_from_ast(
-            self.ROOT_PATH, self.CURRENT_PATH, import_from
+            file_path=self.FILE_PATH, import_from=import_from
         )
 
         assert len(import_modules) == 1
@@ -66,7 +68,7 @@ class TestImportModuleCollectionBuildByImportFromAST:
         import_from = parse_import_from("from .. import jig_ast")
 
         import_modules = ImportModuleCollection.build_by_import_from_ast(
-            self.ROOT_PATH, self.CURRENT_PATH, import_from
+            file_path=self.FILE_PATH, import_from=import_from
         )
 
         assert len(import_modules) == 1
@@ -76,7 +78,7 @@ class TestImportModuleCollectionBuildByImportFromAST:
         import_from = parse_import_from("from ..jig_ast import submodule")
 
         import_modules = ImportModuleCollection.build_by_import_from_ast(
-            self.ROOT_PATH, self.CURRENT_PATH, import_from
+            file_path=self.FILE_PATH, import_from=import_from
         )
 
         assert len(import_modules) == 1

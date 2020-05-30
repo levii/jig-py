@@ -82,10 +82,10 @@ class ImportModuleCollection:
 
     @classmethod
     def build_by_import_from_ast(
-        cls, root_path: str, file_path: str, import_from: ImportFrom
+        cls, file_path: FilePath, import_from: ImportFrom
     ) -> "ImportModuleCollection":
         level = import_from.level if import_from.level is not None else 0
-        prefix = cls._get_path_prefix(root_path, file_path, level)
+        prefix = cls._get_path_prefix(file_path, level)
 
         imports = []
         for alias in import_from.names:
@@ -103,13 +103,11 @@ class ImportModuleCollection:
         return cls(_modules=imports)
 
     @classmethod
-    def _get_path_prefix(cls, root_path: str, file_path: str, level: int):
+    def _get_path_prefix(cls, file_path: FilePath, level: int):
         if level < 1:
             return None
 
-        relative_path = os.path.relpath(file_path, root_path)
-
-        path_list = relative_path.split(os.sep)
+        path_list = file_path.relative_path.split(os.sep)
 
         # level分遡ったパーツを結合する
         return ".".join(path_list[:-level])
@@ -152,7 +150,7 @@ class SourceCodeAST:
 
         for import_from_ast in self._ast.import_froms():
             import_modules += ImportModuleCollection.build_by_import_from_ast(
-                self._root_path, self._source.path.abspath, import_from_ast
+                file_path=self._source.path, import_from=import_from_ast
             )
 
         return import_modules
