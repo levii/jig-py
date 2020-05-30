@@ -2,6 +2,7 @@ import dataclasses
 import os
 from typing import List, Any
 
+from jig.collector.jig_ast import ClassDef
 from jig.collector.jig_ast import JigAST, ImportFrom, Import
 
 
@@ -170,7 +171,7 @@ class SourceCode:
     file: SourceFile
     ast: SourceCodeAST
     import_modules: ImportModuleCollection
-    class_defs: List[Any]
+    class_defs: List[ClassDef]
 
 
 @dataclasses.dataclass(frozen=True)

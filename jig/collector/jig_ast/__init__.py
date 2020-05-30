@@ -37,6 +37,25 @@ class ImportFrom:
 
 
 @dataclasses.dataclass(frozen=True)
+class ClassDef:
+    name: str
+    _ast: ast.ClassDef = dataclasses.field(repr=False, compare=False)
+
+
+@dataclasses.dataclass
+class ClassDefVisitor(ast.NodeVisitor):
+    class_defs: List[ClassDef] = dataclasses.field(default_factory=list)
+
+    def visit_ClassDef(self, node):
+        self.class_defs.append(
+            ClassDef(
+                name=node.name,
+                _ast=node,
+            )
+        )
+
+
+@dataclasses.dataclass(frozen=True)
 class JigAST:
     _ast: ast.AST
 
@@ -86,15 +105,8 @@ class JigAST:
 
         return nodes
 
-    @dataclasses.dataclass
-    class ClassDefVisitor(ast.NodeVisitor):
-        class_defs: List[ast.ClassDef] = dataclasses.field(default_factory=list)
-
-        def visit_ClassDef(self, node):
-            self.class_defs.append(node)
-
-    def class_defs(self) -> List[Any]:
-        visitor = self.ClassDefVisitor()
+    def class_defs(self) -> List[ClassDef]:
+        visitor = ClassDefVisitor()
         visitor.visit(self._ast)
 
-        return [class_def.name for class_def in visitor.class_defs]
+        return [class_def for class_def in visitor.class_defs]
