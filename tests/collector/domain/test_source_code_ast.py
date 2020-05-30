@@ -25,7 +25,7 @@ import os, datetime
         """
 
         source = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
-        ast = SourceCodeAST.build(root_path=self.ROOT_PATH, source=source)
+        ast = SourceCodeAST.build(source=source)
 
         assert ast.get_imports() == collection("os", "datetime")
 
@@ -36,7 +36,7 @@ import datetime as dt
         """
 
         source = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
-        ast = SourceCodeAST.build(root_path=self.ROOT_PATH, source=source)
+        ast = SourceCodeAST.build(source=source)
 
         assert ast.get_imports() == collection("os", "datetime")
 
@@ -46,7 +46,7 @@ from os import path
         """
 
         source = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
-        ast = SourceCodeAST.build(root_path=self.ROOT_PATH, source=source)
+        ast = SourceCodeAST.build(source=source)
 
         assert ast.get_imports() == collection("os.path")
 
@@ -60,7 +60,7 @@ from .. import jig_ast
         """
 
         source = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
-        ast = SourceCodeAST.build(root_path=self.ROOT_PATH, source=source)
+        ast = SourceCodeAST.build(source=source)
 
         modules = [
             "os",

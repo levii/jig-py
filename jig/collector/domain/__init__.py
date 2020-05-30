@@ -140,12 +140,10 @@ class SourceFile:
 class SourceCodeAST:
     _ast: JigAST
     _source: SourceFile
-    _root_path: str
 
     @classmethod
-    def build(cls, root_path: str, source: SourceFile):
+    def build(cls, source: SourceFile):
         return cls(
-            _root_path=root_path,
             _source=source,
             _ast=JigAST.parse(source=source.content, filename=source.filename),
         )
@@ -173,9 +171,8 @@ class SourceCode:
 
 @dataclasses.dataclass(frozen=True)
 class SourceCodeCollectRequest:
-    root_path: str
     file: SourceFile
 
     def build(self) -> SourceCode:
-        ast = SourceCodeAST.build(self.root_path, self.file)
+        ast = SourceCodeAST.build(self.file)
         return SourceCode(file=self.file, ast=ast, import_modules=ast.get_imports(),)
