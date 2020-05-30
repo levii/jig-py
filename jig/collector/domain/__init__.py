@@ -2,8 +2,10 @@ import dataclasses
 import os
 from typing import List
 
-from jig.collector.jig_ast import ClassDef, JigSourceCode
-from jig.collector.jig_ast import ImportFrom, Import
+from jig.collector.jig_ast import JigSourceCode
+from jig.collector.jig_ast import ClassDef
+from jig.collector.jig_ast import ImportFrom
+from jig.collector.jig_ast import Import
 
 
 @dataclasses.dataclass(frozen=True)
