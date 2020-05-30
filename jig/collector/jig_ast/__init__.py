@@ -1,6 +1,6 @@
 import dataclasses
 from typed_ast import ast3 as ast
-from typing import List, Optional, Any
+from typing import List, Optional
 
 
 @dataclasses.dataclass(frozen=True)
@@ -12,6 +12,7 @@ class Alias:
 @dataclasses.dataclass(frozen=True)
 class Import:
     names: List[Alias]
+    _ast: ast.Import = dataclasses.field(repr=False, compare=False)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -26,6 +27,7 @@ class ImportFrom:
     module: Optional[str]
     names: List[Alias]
     level: Optional[int]
+    _ast: ast.ImportFrom = dataclasses.field(repr=False, compare=False)
 
     @classmethod
     def from_ast(cls, import_from: ast.ImportFrom) -> "ImportFrom":
@@ -33,7 +35,46 @@ class ImportFrom:
             Alias(name=alias.name, asname=alias.asname) for alias in import_from.names
         ]
 
-        return cls(module=import_from.module, names=names, level=import_from.level)
+        return cls(
+            module=import_from.module,
+            names=names,
+            level=import_from.level,
+            _ast=import_from,
+        )
+
+
+@dataclasses.dataclass
+class ImportVisitor(ast.NodeVisitor):
+    imports: List[Import] = dataclasses.field(default_factory=list)
+
+    def visit_Import(self, node):
+        self.imports.append(
+            Import(
+                names=[
+                    Alias(name=name_alias.name, asname=name_alias.asname)
+                    for name_alias in node.names
+                ],
+                _ast=node,
+            )
+        )
+
+
+@dataclasses.dataclass
+class ImportFromVisitor(ast.NodeVisitor):
+    import_froms: List[ImportFrom] = dataclasses.field(default_factory=list)
+
+    def visit_ImportFrom(self, node):
+        self.import_froms.append(
+            ImportFrom(
+                module=node.module,
+                names=[
+                    Alias(name=name_alias.name, asname=name_alias.asname)
+                    for name_alias in node.names
+                ],
+                level=node.level,
+                _ast=node,
+            )
+        )
 
 
 @dataclasses.dataclass(frozen=True)
@@ -47,12 +88,7 @@ class ClassDefVisitor(ast.NodeVisitor):
     class_defs: List[ClassDef] = dataclasses.field(default_factory=list)
 
     def visit_ClassDef(self, node):
-        self.class_defs.append(
-            ClassDef(
-                name=node.name,
-                _ast=node,
-            )
-        )
+        self.class_defs.append(ClassDef(name=node.name, _ast=node,))
 
 
 @dataclasses.dataclass(frozen=True)
@@ -64,49 +100,20 @@ class JigAST:
         tree = ast.parse(source=source, filename=filename)
         return cls(tree)
 
-    @dataclasses.dataclass
-    class ImportVisitor(ast.NodeVisitor):
-        imports: List[ast.Import] = dataclasses.field(default_factory=list)
-        import_froms: List[ast.ImportFrom] = dataclasses.field(default_factory=list)
-
-        def visit_Import(self, node):
-            self.imports.append(node)
-
-        def visit_ImportFrom(self, node):
-            self.import_froms.append(node)
-
     def imports(self) -> List[Import]:
-        visitor = self.ImportVisitor()
+        visitor = ImportVisitor()
         visitor.visit(self._ast)
 
-        imports = []
-        for import_node in visitor.imports:
-            names = []
-            for name_alias in import_node.names:
-                names.append(Alias(name=name_alias.name, asname=name_alias.asname))
-            imports.append(Import(names=names))
-
-        return imports
+        return visitor.imports
 
     def import_froms(self) -> List[ImportFrom]:
-        visitor = self.ImportVisitor()
+        visitor = ImportFromVisitor()
         visitor.visit(self._ast)
 
-        nodes = []
-        for from_node in visitor.import_froms:
-            names = [
-                Alias(name=name_alias.name, asname=name_alias.asname)
-                for name_alias in from_node.names
-            ]
-
-            nodes.append(
-                ImportFrom(module=from_node.module, names=names, level=from_node.level)
-            )
-
-        return nodes
+        return visitor.import_froms
 
     def class_defs(self) -> List[ClassDef]:
         visitor = ClassDefVisitor()
         visitor.visit(self._ast)
 
-        return [class_def for class_def in visitor.class_defs]
+        return visitor.class_defs

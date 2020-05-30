@@ -1,6 +1,6 @@
 import dataclasses
 import os
-from typing import List, Any
+from typing import List
 
 from jig.collector.jig_ast import ClassDef
 from jig.collector.jig_ast import JigAST, ImportFrom, Import
@@ -180,4 +180,9 @@ class SourceCodeCollectRequest:
 
     def build(self) -> SourceCode:
         ast = SourceCodeAST.build(self.file)
-        return SourceCode(file=self.file, ast=ast, import_modules=ast.get_imports(), class_defs=ast.get_class_defs())
+        return SourceCode(
+            file=self.file,
+            ast=ast,
+            import_modules=ast.get_imports(),
+            class_defs=ast.get_class_defs(),
+        )
