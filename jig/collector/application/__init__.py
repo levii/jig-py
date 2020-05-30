@@ -1,6 +1,7 @@
 import dataclasses
 import os
 
+from jig.collector.domain import FilePath
 from jig.collector.domain import SourceCode
 from jig.collector.domain import SourceCodeCollectRequest
 from jig.collector.domain import SourceFile
@@ -16,9 +17,10 @@ class SourceCodeCollector:
         source = open(target_path).read()
 
         return SourceCodeCollectRequest(
-            root_path=self.root_path,
             file=SourceFile(
-                path=target_path, content=source, size=os.path.getsize(target_path),
+                path=FilePath(root_path=self.root_path, relative_path=target_path),
+                content=source,
+                size=os.path.getsize(target_path),
             ),
         ).build()
 
