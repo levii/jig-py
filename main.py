@@ -2,12 +2,19 @@ import os
 import sys
 
 from jig.collector.application import collect
+from jig.visualizer.application import DependencyTextVisualizer
 
-if __name__ == "__main__":
+
+def main():
     # とりあえずこのmain.pyファイルのパスをルートとする
     root_path = os.path.dirname(os.path.abspath(__file__))
 
-    result = collect(root_path=root_path, target_path=sys.argv[1])
-    print(result)
+    source_code = collect(root_path=root_path, target_path=sys.argv[1])
+    print(source_code)
 
-    print(result.module_dependencies(["jig"]))
+    print(source_code.module_dependencies(["jig"]))
+    print(DependencyTextVisualizer(source_code=source_code, module_names=["jig"]).visualize())
+
+
+if __name__ == "__main__":
+    main()
