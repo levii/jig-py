@@ -15,8 +15,20 @@ class FilePath:
         return os.path.join(self.root_path, self.relative_path)
 
     @property
-    def filename(self):
+    def filename(self) -> str:
         return os.path.basename(self.relative_path)
+
+    @property
+    def basename(self) -> str:
+        return os.path.splitext(self.filename)[0]
+
+    @property
+    def relative_dirname(self) -> str:
+        return os.path.dirname(self.relative_path)
+
+    @property
+    def dirpath_list(self) -> List[str]:
+        return self.relative_dirname.split(os.sep)
 
     @classmethod
     def build_with_abspath(cls, root_path: str, abspath: str) -> "FilePath":
@@ -27,7 +39,18 @@ class FilePath:
 
 @dataclasses.dataclass(frozen=True)
 class ModulePath:
-    _path: str
+    path: str
+
+    @classmethod
+    def build_by_file_path(cls, path: FilePath) -> "ModulePath":
+        path_list = path.dirpath_list
+
+        if path.filename != "__init__.py":
+            path_list.append(path.basename)
+
+        module_path = ".".join(path_list)
+
+        return cls(module_path)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -51,7 +74,7 @@ class ImportModuleCollection:
     @classmethod
     def build_by_import_ast(cls, import_ast: Import) -> "ImportModuleCollection":
         imports = [
-            ImportModule(module_path=ModulePath(_path=name.name))
+            ImportModule(module_path=ModulePath(path=name.name))
             for name in import_ast.names
         ]
 
@@ -101,6 +124,10 @@ class SourceFile:
     @property
     def filename(self):
         return self.path.filename
+
+    @property
+    def module_path(self) -> ModulePath:
+        return ModulePath.build_by_file_path(self.path)
 
 
 @dataclasses.dataclass(frozen=True)
