@@ -140,6 +140,7 @@ class SourceFile:
 @dataclasses.dataclass(frozen=True)
 class SourceCode:
     file: SourceFile
+    module_path: ModulePath
     import_modules: ImportModuleCollection
     class_defs: List[ClassDef]
 
@@ -151,6 +152,7 @@ class SourceCode:
 
         return SourceCode(
             file=file,
+            module_path=ModulePath.build_by_file_path(path=file.path),
             import_modules=cls._build_import_modules(file, jig_source_code),
             class_defs=jig_source_code.class_defs,
         )
