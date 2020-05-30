@@ -2,8 +2,8 @@ import dataclasses
 import os
 from typing import List
 
-from jig.collector.jig_ast import ClassDef
-from jig.collector.jig_ast import JigAST, ImportFrom, Import
+from jig.collector.jig_ast import ClassDef, JigSourceCode
+from jig.collector.jig_ast import ImportFrom, Import
 
 
 @dataclasses.dataclass(frozen=True)
@@ -42,8 +42,6 @@ class FilePath:
 
         path_list = self.relative_path.split(os.sep)
 
-        # level分遡ったパーツを結合する
-        # return ".".join(path_list[:-level])
         return path_list[:-level]
 
     @classmethod
@@ -138,51 +136,35 @@ class SourceFile:
 
 
 @dataclasses.dataclass(frozen=True)
-class SourceCodeAST:
-    _ast: JigAST
-    _source: SourceFile
-
-    @classmethod
-    def build(cls, source: SourceFile):
-        return cls(
-            _source=source,
-            _ast=JigAST.parse(source=source.content, filename=source.filename),
-        )
-
-    def get_imports(self) -> ImportModuleCollection:
-        import_modules = ImportModuleCollection()
-
-        for import_ast in self._ast.imports():
-            import_modules += ImportModuleCollection.build_by_import_ast(import_ast)
-
-        for import_from_ast in self._ast.import_froms():
-            import_modules += ImportModuleCollection.build_by_import_from_ast(
-                file_path=self._source.path, import_from=import_from_ast
-            )
-
-        return import_modules
-
-    def get_class_defs(self):
-        return self._ast.class_defs()
-
-
-@dataclasses.dataclass(frozen=True)
 class SourceCode:
     file: SourceFile
-    ast: SourceCodeAST
     import_modules: ImportModuleCollection
     class_defs: List[ClassDef]
 
-
-@dataclasses.dataclass(frozen=True)
-class SourceCodeCollectRequest:
-    file: SourceFile
-
-    def build(self) -> SourceCode:
-        ast = SourceCodeAST.build(self.file)
-        return SourceCode(
-            file=self.file,
-            ast=ast,
-            import_modules=ast.get_imports(),
-            class_defs=ast.get_class_defs(),
+    @classmethod
+    def build(cls, file: SourceFile) -> "SourceCode":
+        jig_source_code = JigSourceCode.build(
+            source=file.content, filename=file.filename
         )
+
+        return SourceCode(
+            file=file,
+            import_modules=cls._build_import_modules(file, jig_source_code),
+            class_defs=jig_source_code.class_defs,
+        )
+
+    @classmethod
+    def _build_import_modules(
+        cls, file: SourceFile, jig_source_code: JigSourceCode
+    ) -> ImportModuleCollection:
+        import_modules = ImportModuleCollection()
+
+        for import_ast in jig_source_code.imports:
+            import_modules += ImportModuleCollection.build_by_import_ast(import_ast)
+
+        for import_from_ast in jig_source_code.import_froms:
+            import_modules += ImportModuleCollection.build_by_import_from_ast(
+                file_path=file.path, import_from=import_from_ast
+            )
+
+        return import_modules

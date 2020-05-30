@@ -96,7 +96,7 @@ class JigAST:
     _ast: ast.AST
 
     @classmethod
-    def parse(cls, source, filename: str = "<unknown>") -> "JigAST":
+    def parse(cls, source: str, filename: str = "<unknown>") -> "JigAST":
         tree = ast.parse(source=source, filename=filename)
         return cls(tree)
 
@@ -117,3 +117,20 @@ class JigAST:
         visitor.visit(self._ast)
 
         return visitor.class_defs
+
+
+@dataclasses.dataclass(frozen=True)
+class JigSourceCode:
+    imports: List[Import]
+    import_froms: List[ImportFrom]
+    class_defs: List[ClassDef]
+
+    @classmethod
+    def build(cls, source: str, filename: str) -> "JigSourceCode":
+        jig_ast = JigAST.parse(source=source, filename=filename)
+
+        return cls(
+            imports=jig_ast.imports(),
+            import_froms=jig_ast.import_froms(),
+            class_defs=jig_ast.class_defs(),
+        )

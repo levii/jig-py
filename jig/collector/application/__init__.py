@@ -3,7 +3,6 @@ import os
 
 from jig.collector.domain import FilePath
 from jig.collector.domain import SourceCode
-from jig.collector.domain import SourceCodeCollectRequest
 from jig.collector.domain import SourceFile
 
 
@@ -16,13 +15,13 @@ class SourceCodeCollector:
 
         source = open(target_path).read()
 
-        return SourceCodeCollectRequest(
+        return SourceCode.build(
             file=SourceFile(
                 path=FilePath(root_path=self.root_path, relative_path=target_path),
                 content=source,
                 size=os.path.getsize(target_path),
             ),
-        ).build()
+        )
 
 
 def collect(root_path: str, target_path: str) -> SourceCode:

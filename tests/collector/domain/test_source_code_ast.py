@@ -1,6 +1,6 @@
 from jig.collector.domain import FilePath
+from jig.collector.domain import SourceCode
 from jig.collector.domain import (
-    SourceCodeAST,
     SourceFile,
     ModulePath,
     ImportModule,
@@ -24,10 +24,10 @@ class TestSourceCodeASTGetImports:
 import os, datetime
         """
 
-        source = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
-        ast = SourceCodeAST.build(source=source)
+        file = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
+        ast = SourceCode.build(file)
 
-        assert ast.get_imports() == collection("os", "datetime")
+        assert ast.import_modules == collection("os", "datetime")
 
     def test_multiple_lines(self):
         content = """
@@ -35,20 +35,20 @@ import os
 import datetime as dt
         """
 
-        source = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
-        ast = SourceCodeAST.build(source=source)
+        file = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
+        ast = SourceCode.build(file)
 
-        assert ast.get_imports() == collection("os", "datetime")
+        assert ast.import_modules == collection("os", "datetime")
 
     def test_import_from(self):
         content = """
 from os import path
         """
 
-        source = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
-        ast = SourceCodeAST.build(source=source)
+        file = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
+        ast = SourceCode.build(file)
 
-        assert ast.get_imports() == collection("os.path")
+        assert ast.import_modules == collection("os.path")
 
     def test_mixed_import(self):
         content = """
@@ -59,8 +59,8 @@ from . import submodule
 from .. import jig_ast
         """
 
-        source = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
-        ast = SourceCodeAST.build(source=source)
+        file = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
+        ast = SourceCode.build(file)
 
         modules = [
             "os",
@@ -69,4 +69,4 @@ from .. import jig_ast
             "jig.collector.domain.submodule",
             "jig.collector.jig_ast",
         ]
-        assert ast.get_imports() == collection(*modules)
+        assert ast.import_modules == collection(*modules)
