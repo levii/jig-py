@@ -30,6 +30,21 @@ class FilePath:
     def dirpath_list(self) -> List[str]:
         return self.relative_dirname.split(os.sep)
 
+    def dirpath_list_with_relative_level(self, level: int) -> List[str]:
+        """
+        :param level:
+        :return: level < 1 の時はから配列
+        それ以外の場合は、level分パスを遡った時の相対ディレクトリのリストを返す
+        """
+        if level < 1:
+            return []
+
+        path_list = self.relative_path.split(os.sep)
+
+        # level分遡ったパーツを結合する
+        # return ".".join(path_list[:-level])
+        return path_list[:-level]
+
     @classmethod
     def build_with_abspath(cls, root_path: str, abspath: str) -> "FilePath":
         return cls(
@@ -85,32 +100,25 @@ class ImportModuleCollection:
         cls, file_path: FilePath, import_from: ImportFrom
     ) -> "ImportModuleCollection":
         level = import_from.level if import_from.level is not None else 0
-        prefix = cls._get_path_prefix(file_path, level)
 
         imports = []
         for alias in import_from.names:
-            # prefixもimport_from.moduleも存在しない（None）なことがあるのでフィルタする
-            # prefix: from xxx が相対パス指定じゃない場合None
-            # import_from.module: from句に名前指定がないときNone（from . や from .. など）
-            path_list = list(
-                filter(lambda x: x, [prefix, import_from.module, alias.name])
-            )
+            # from xxx が.が含まれない場合、空配列
+            path_list = file_path.dirpath_list_with_relative_level(level)
+
+            # from句に名前指定がないときNone（from . や from .. など）
+            # .fooなら"foo"が入る
+            if import_from.module:
+                path_list.append(import_from.module)
+
+            if alias.name:
+                path_list.append(alias.name)
 
             path = ModulePath(".".join(path_list))
 
             imports.append(ImportModule(path))
 
         return cls(_modules=imports)
-
-    @classmethod
-    def _get_path_prefix(cls, file_path: FilePath, level: int):
-        if level < 1:
-            return None
-
-        path_list = file_path.relative_path.split(os.sep)
-
-        # level分遡ったパーツを結合する
-        return ".".join(path_list[:-level])
 
 
 @dataclasses.dataclass(frozen=True)
