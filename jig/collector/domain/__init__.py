@@ -1,6 +1,6 @@
 import dataclasses
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from jig.collector.jig_ast import JigSourceCode
 from jig.collector.jig_ast import ClassDef
@@ -191,3 +191,23 @@ class SourceCode:
             )
 
         return import_modules
+
+
+@dataclasses.dataclass(frozen=True)
+class SourceCodeCollection:
+    collection: List[SourceCode]
+
+    def __iter__(self):
+        return self.collection.__iter__()
+
+    def __len__(self):
+        return self.collection.__len__()
+
+    def __getitem__(self, item):
+        return self.collection.__getitem__(item)
+
+    def get_by_relative_path(self, relative_path: str) -> Optional[SourceCode]:
+        for source_code in self.collection:
+            if source_code.file.path.relative_path == relative_path:
+                return source_code
+        return None
