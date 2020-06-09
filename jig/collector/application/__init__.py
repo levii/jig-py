@@ -2,7 +2,7 @@ import dataclasses
 import os
 from typing import List
 
-from jig.collector.domain import FilePath
+from jig.collector.domain import FilePath, SourceCodeCollection
 from jig.collector.domain import SourceCode
 from jig.collector.domain import SourceFile
 
@@ -11,7 +11,7 @@ from jig.collector.domain import SourceFile
 class SourceCodeCollector:
     root_path: str
 
-    def collect(self, target_path: str) -> List[SourceCode]:
+    def collect(self, target_path: str) -> SourceCodeCollection:
         file_path = FilePath(root_path=self.root_path, relative_path=target_path)
 
         source_codes = []
@@ -20,7 +20,7 @@ class SourceCodeCollector:
         else:
             source_codes.append(self.collect_file(target_path))
 
-        return source_codes
+        return SourceCodeCollection(source_codes)
 
     def collect_file(self, target_path: str) -> SourceCode:
         source = open(target_path).read()
