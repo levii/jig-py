@@ -1,20 +1,19 @@
 import setuptools
 
 
-name = 'jig-py'
-version = '0.0.1'
-description = 'Jig for Python'
+name = "jig-py"
+version = "0.0.1"
+description = "Jig for Python"
 dependencies = []
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 packages = [
-    package for package in setuptools.find_packages()
-    if package.startswith('jig')
+    package for package in setuptools.find_packages() if package.startswith("jig")
 ]
 
-namespaces = ['jig']
+namespaces = ["jig"]
 
 setuptools.setup(
     name=name,
