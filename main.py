@@ -53,7 +53,9 @@ class Main:
         print(dot.visualize(depth=depth))
 
     def _collect_source_codes(self, target_path: str) -> List[SourceCode]:
-        return list(SourceCodeCollector(root_path=ROOT_PATH).collect(target_path=target_path))
+        return list(
+            SourceCodeCollector(root_path=ROOT_PATH).collect(target_path=target_path)
+        )
 
 
 if __name__ == "__main__":

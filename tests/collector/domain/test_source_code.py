@@ -3,19 +3,19 @@ from jig.collector.domain import SourceCode, SourceFile, FilePath, SourceCodeCol
 
 class TestSourceCode:
     def test_build(self):
-        root_path = '/path/to/something'
+        root_path = "/path/to/something"
         main_py = SourceCode.build(
             file=SourceFile(
-                path=FilePath(root_path=root_path, relative_path='main.py'),
+                path=FilePath(root_path=root_path, relative_path="main.py"),
                 size=0,
-                content=''
+                content="",
             )
         )
         test_py = SourceCode.build(
             file=SourceFile(
-                path=FilePath(root_path=root_path, relative_path='test.py'),
+                path=FilePath(root_path=root_path, relative_path="test.py"),
                 size=0,
-                content=''
+                content="",
             )
         )
         assert isinstance(main_py, SourceCode)
