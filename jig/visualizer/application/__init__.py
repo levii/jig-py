@@ -30,16 +30,16 @@ class DotTextVisualizer:
         def __init__(self, module_path: str):
             self.module_path = module_path
 
-        def path(self, level: int) -> str:
+        def path(self, depth: int) -> str:
             path_list = self.module_path.split(".")
-            return ".".join(path_list[:level])
+            return ".".join(path_list[:depth])
 
-    def visualize(self, level: int) -> str:
+    def visualize(self, depth: int) -> str:
         result = []
         for source_code in self._source_codes:
             for dep in source_code.module_dependencies(module_names=self._module_names):
-                path1 = self.ModuleNode(module_path=dep[0]).path(level=level)
-                path2 = self.ModuleNode(module_path=dep[1]).path(level=level)
+                path1 = self.ModuleNode(module_path=dep[0]).path(depth=depth)
+                path2 = self.ModuleNode(module_path=dep[1]).path(depth=depth)
 
                 # 自己参照は依存関係分析的には意味ないので除く
                 if path1 == path2:

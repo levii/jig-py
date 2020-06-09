@@ -4,3 +4,4 @@ flake8
 black
 mypy
 lxml  # for mypy reporting
+fire  # for cli interface
