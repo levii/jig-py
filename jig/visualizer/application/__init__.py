@@ -1,3 +1,4 @@
+import subprocess
 import textwrap
 from typing import List
 
@@ -54,3 +55,19 @@ class DotTextVisualizer:
         graph_text = ["digraph {", textwrap.indent(edge_text, "  "), "}"]
 
         return "\n".join(graph_text)
+
+
+class DependencyImageVisualizer:
+    def __init__(self, source_codes: List[SourceCode], module_names: List[str]):
+        self._dot_text_visualizer = DotTextVisualizer(
+            source_codes=source_codes, module_names=module_names
+        )
+
+    def visualize(self, depth: int) -> None:
+        dot = self._dot_text_visualizer.visualize(depth)
+
+        p = subprocess.Popen(
+            ["dot", "-Tpng", f"-odependency{depth}.png"], stdin=subprocess.PIPE
+        )
+
+        p.communicate(dot.encode())

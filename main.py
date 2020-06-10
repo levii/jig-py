@@ -5,7 +5,11 @@ import fire
 
 from jig.collector.application import SourceCodeCollector
 from jig.collector.domain import SourceCode
-from jig.visualizer.application import DotTextVisualizer, DependencyTextVisualizer
+from jig.visualizer.application import (
+    DotTextVisualizer,
+    DependencyTextVisualizer,
+    DependencyImageVisualizer,
+)
 
 # とりあえずこのmain.pyファイルのパスをルートとする
 ROOT_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -51,6 +55,19 @@ class Main:
         dot = DotTextVisualizer(source_codes=source_codes, module_names=["jig"])
 
         print(dot.visualize(depth=depth))
+
+    def module_dependency(self, target_path: str, depth: int = 3) -> None:
+        """
+        指定されたパスのPythonソースコードを解析し、モジュール依存関係をpng形式の画像として出力します。
+        ディレクトリを指定した場合はそのディレクトリ配下のPythonファイルを再帰的に収集して解析します。
+        :param target_path: 解析対象のソースファイルまたはディレクトリへのパス
+        :param depth: モジュールパスのどの深さ（ドットの数）まででグルーピングするかを指定します。（デフォルト=3）
+        :return:
+        """
+        source_codes = self._collect_source_codes(target_path)
+        dot = DependencyImageVisualizer(source_codes=source_codes, module_names=["jig"])
+
+        dot.visualize(depth=depth)
 
     def _collect_source_codes(self, target_path: str) -> List[SourceCode]:
         return list(
