@@ -1,3 +1,4 @@
+import os
 import subprocess
 import textwrap
 from typing import List
@@ -63,11 +64,13 @@ class DependencyImageVisualizer:
             source_codes=source_codes, module_names=module_names
         )
 
-    def visualize(self, depth: int) -> None:
+    def visualize(self, depth: int, output_dir: str) -> None:
         dot = self._dot_text_visualizer.visualize(depth)
 
-        p = subprocess.Popen(
-            ["dot", "-Tpng", f"-odependency{depth}.png"], stdin=subprocess.PIPE
-        )
+        os.makedirs(output_dir, exist_ok=True)
+
+        filepath = os.path.join(output_dir, f"dependency{depth}.png")
+
+        p = subprocess.Popen(["dot", "-Tpng", f"-o{filepath}"], stdin=subprocess.PIPE)
 
         p.communicate(dot.encode())

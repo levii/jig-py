@@ -132,3 +132,6 @@ dmypy.json
 .pyre/
 
 .pre-commit-config.yaml
+
+# Ignore default output directory
+output/
