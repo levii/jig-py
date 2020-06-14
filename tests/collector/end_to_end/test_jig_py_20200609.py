@@ -51,6 +51,7 @@ class TestJigPy20200609:
         assert cls.get_code_path() is not None
 
     def test_collector(self):
+        os.chdir(self.get_code_path())
         source_code_collection = SourceCodeCollector(
             root_path=self.get_code_path()
         ).collect("jig")
@@ -113,7 +114,6 @@ class TestJigPy20200609:
                 ImportModule(ModulePath("os")),
                 ImportModule(ModulePath("typing.List")),
                 ImportModule(ModulePath("jig.collector.domain.FilePath")),
-                ImportModule(ModulePath("jig.collector.domain.SourceCodeCollection")),
                 ImportModule(ModulePath("jig.collector.domain.SourceCode")),
                 ImportModule(ModulePath("jig.collector.domain.SourceFile")),
             ]
