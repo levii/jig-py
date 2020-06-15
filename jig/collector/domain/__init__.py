@@ -169,6 +169,12 @@ class SourceCode:
         )
 
     def module_dependencies(self, module_names: List[str]) -> List[Tuple[str, str]]:
+        if not module_names:
+            return [
+                (self.module_path.path, module.module_path.path)
+                for module in self.import_modules
+            ]
+
         dependencies = []
         for module in self.import_modules:
             if module.module_path.match_module_names(module_names):
