@@ -2,7 +2,7 @@ import setuptools
 
 
 name = "jig-py"
-version = "0.0.1"
+version = "0.0.2a0"
 description = "Jig for Python"
 dependencies = []
 
@@ -26,6 +26,7 @@ setuptools.setup(
     url="https://github.com/levii/jig-py",
     packages=packages,
     namespaces=namespaces,
+    entry_points={"console_scripts": ["jig-py = jig.cli.main:main"]},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

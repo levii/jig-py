@@ -1,13 +1,13 @@
 import os
-from typing import List, Optional
+from typing import Optional, List
 
 import fire
 
 from jig.collector.application import SourceCodeCollector
 from jig.collector.domain import SourceCode
 from jig.visualizer.application import (
-    DotTextVisualizer,
     DependencyTextVisualizer,
+    DotTextVisualizer,
     DependencyImageVisualizer,
 )
 
@@ -126,5 +126,9 @@ class Main:
         )
 
 
-if __name__ == "__main__":
+def main():
     fire.Fire(Main)
+
+
+if __name__ == "__main__":
+    main()
