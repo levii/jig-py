@@ -24,15 +24,15 @@ clean:
 
 .PHONY: mypy
 mypy:
-	${server_runner} mypy main.py jig/
+	${server_runner} mypy jig/
 
 .PHONY: black
 black:
-	${server_runner} black main.py jig/ tests/
+	${server_runner} black jig/ tests/
 
 .PHONY: flake8
 flake8:
-	${server_runner} flake8 main.py jig/ tests/
+	${server_runner} flake8 jig/ tests/
 
 .PHONY: check
 check: mypy black flake8

@@ -17,7 +17,7 @@ jobs:
         pip install mypy lxml
     - name: Lint with mypy
       run: |
-        mypy main.py jig
+        mypy jig
     - uses: actions/upload-artifact@master
       if: always()
       with:
@@ -38,7 +38,7 @@ jobs:
           pip install black
       - name: Lint with black
         run: |
-          black --diff --check main.py jig/ tests/
+          black --diff --check jig/ tests/
 
   flake8:
     runs-on: ubuntu-latest
@@ -54,7 +54,7 @@ jobs:
           pip install flake8
       - name: Lint with flake8
         run: |
-          flake8 main.py jig/ tests/
+          flake8 jig/ tests/
 
   pytest:
     runs-on: ubuntu-latest
