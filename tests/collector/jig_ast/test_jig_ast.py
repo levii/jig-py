@@ -1,4 +1,4 @@
-from jig.collector.jig_ast import Import, ImportFrom
+from jig.collector.domain.ast import Import, ImportFrom
 from jig.collector.jig_ast import JigAST
 
 

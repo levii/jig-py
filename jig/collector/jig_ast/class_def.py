@@ -2,11 +2,7 @@ import dataclasses
 from typed_ast import ast3 as ast
 from typing import List
 
-
-@dataclasses.dataclass(frozen=True)
-class ClassDef:
-    name: str
-    _ast: ast.ClassDef = dataclasses.field(repr=False, compare=False)
+from jig.collector.domain.ast import ClassDef
 
 
 @dataclasses.dataclass

@@ -2,10 +2,9 @@ import dataclasses
 from typed_ast import ast3 as ast
 from typing import List
 
-from jig.collector.jig_ast.class_def import ClassDef
+from jig.collector.domain.ast import ClassDef
 from jig.collector.jig_ast.class_def import ClassDefVisitor
-from jig.collector.jig_ast.imports import Import
-from jig.collector.jig_ast.imports import ImportFrom
+from jig.collector.domain.ast import Import, ImportFrom
 from jig.collector.jig_ast.imports import ImportFromVisitor
 from jig.collector.jig_ast.imports import ImportVisitor
 

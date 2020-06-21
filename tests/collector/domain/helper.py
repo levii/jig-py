@@ -1,5 +1,5 @@
 from typed_ast import ast3 as ast
-from jig.collector.jig_ast import ImportFrom
+from jig.collector.domain.ast import ImportFrom
 
 
 def parse_import_from(line: str) -> ImportFrom:
