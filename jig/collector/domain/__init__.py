@@ -2,10 +2,8 @@ import dataclasses
 import os
 from typing import List, Tuple, Optional
 
-from jig.collector.jig_ast import JigSourceCode
-from jig.collector.jig_ast import ClassDef
-from jig.collector.jig_ast import ImportFrom
-from jig.collector.jig_ast import Import
+from jig.collector.domain.ast import ClassDef, JigSourceCode
+from jig.collector.domain.ast import Import, ImportFrom
 
 
 @dataclasses.dataclass(frozen=True)

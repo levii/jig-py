@@ -1,7 +1,13 @@
 import dataclasses
-from typing import Optional
+from typing import Optional, List
+
 from typed_ast import ast3 as ast
-from typing import List
+
+
+@dataclasses.dataclass(frozen=True)
+class ClassDef:
+    name: str
+    _ast: ast.ClassDef = dataclasses.field(repr=False, compare=False)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -42,6 +48,59 @@ class ImportFrom:
             level=import_from.level,
             _ast=import_from,
         )
+
+
+@dataclasses.dataclass(frozen=True)
+class JigAST:
+    _ast: ast.AST
+
+    @classmethod
+    def parse(cls, source: str, filename: str = "<unknown>") -> "JigAST":
+        tree = ast.parse(source=source, filename=filename)
+        return cls(tree)
+
+    def imports(self) -> List[Import]:
+        visitor = ImportVisitor()
+        visitor.visit(self._ast)
+
+        return visitor.imports
+
+    def import_froms(self) -> List[ImportFrom]:
+        visitor = ImportFromVisitor()
+        visitor.visit(self._ast)
+
+        return visitor.import_froms
+
+    def class_defs(self) -> List[ClassDef]:
+        visitor = ClassDefVisitor()
+        visitor.visit(self._ast)
+
+        return visitor.class_defs
+
+
+@dataclasses.dataclass(frozen=True)
+class JigSourceCode:
+    imports: List[Import]
+    import_froms: List[ImportFrom]
+    class_defs: List[ClassDef]
+
+    @classmethod
+    def build(cls, source: str, filename: str) -> "JigSourceCode":
+        jig_ast = JigAST.parse(source=source, filename=filename)
+
+        return cls(
+            imports=jig_ast.imports(),
+            import_froms=jig_ast.import_froms(),
+            class_defs=jig_ast.class_defs(),
+        )
+
+
+@dataclasses.dataclass
+class ClassDefVisitor(ast.NodeVisitor):
+    class_defs: List[ClassDef] = dataclasses.field(default_factory=list)
+
+    def visit_ClassDef(self, node):
+        self.class_defs.append(ClassDef(name=node.name, _ast=node,))
 
 
 @dataclasses.dataclass
