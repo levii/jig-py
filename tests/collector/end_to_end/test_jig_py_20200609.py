@@ -2,6 +2,7 @@ import os
 import urllib.request
 import zipfile
 import io
+from pathlib import Path
 from typing import Optional
 
 from jig.collector.application import SourceCodeCollector
@@ -53,8 +54,8 @@ class TestJigPy20200609:
     def test_collector(self):
         os.chdir(self.get_code_path())
         source_code_collection = SourceCodeCollector(
-            root_path=self.get_code_path()
-        ).collect("jig")
+            root_path=Path(self.get_code_path())
+        ).collect(Path("jig"))
         assert len(source_code_collection) == 10
         filenames = sorted(
             [code.file.path.relative_path for code in source_code_collection]
