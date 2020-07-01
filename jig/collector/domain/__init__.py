@@ -1,5 +1,6 @@
 import dataclasses
 import os
+from pathlib import Path
 from typing import List, Tuple, Optional
 
 from jig.collector.domain.ast import ClassDef, JigSourceCode
@@ -7,64 +8,27 @@ from jig.collector.domain.ast import Import, ImportFrom
 
 
 @dataclasses.dataclass(frozen=True)
-class FilePath:
-    root_path: str
-    relative_path: str
-
-    @property
-    def abspath(self) -> str:
-        return os.path.join(self.root_path, self.relative_path)
-
-    @property
-    def filename(self) -> str:
-        return os.path.basename(self.relative_path)
-
-    @property
-    def basename(self) -> str:
-        return os.path.splitext(self.filename)[0]
-
-    @property
-    def relative_dirname(self) -> str:
-        return os.path.dirname(self.relative_path)
-
-    @property
-    def dirpath_list(self) -> List[str]:
-        return self.relative_dirname.split(os.sep)
-
-    def dirpath_list_with_relative_level(self, level: int) -> List[str]:
-        """
-        :param level:
-        :return: level < 1 の時はから配列
-        それ以外の場合は、level分パスを遡った時の相対ディレクトリのリストを返す
-        """
-        if level < 1:
-            return []
-
-        path_list = self.relative_path.split(os.sep)
-
-        return path_list[:-level]
-
-    @classmethod
-    def build_with_abspath(cls, root_path: str, abspath: str) -> "FilePath":
-        return cls(
-            root_path=root_path, relative_path=os.path.relpath(abspath, start=root_path)
-        )
-
-
-@dataclasses.dataclass(frozen=True)
 class ModulePath:
-    path: str
+    names: List[str]
+
+    def __post_init__(self):
+        assert any([name.find(".") < 0 for name in self.names])
+
+    def join(self, name: str) -> "ModulePath":
+        """
+        パスを追加します
+        :param name:
+        :return:
+        """
+        return ModulePath(names=self.names + [name])
+
+    def __str__(self) -> str:
+        return ".".join(self.names)
 
     @classmethod
-    def build_by_file_path(cls, path: FilePath) -> "ModulePath":
-        path_list = path.dirpath_list
-
-        if path.filename != "__init__.py":
-            path_list.append(path.basename)
-
-        module_path = ".".join(path_list)
-
-        return cls(module_path)
+    def from_str(cls, path: str) -> "ModulePath":
+        names = path.split(".")
+        return cls(names=names)
 
     def match_module_names(self, module_names: List[str]) -> bool:
         return any(
@@ -72,7 +36,83 @@ class ModulePath:
         )
 
     def match_module_name(self, module_name: str) -> bool:
-        return self.path == module_name or self.path.startswith(module_name + ".")
+        path_str = str(self)
+        return path_str == module_name or path_str.startswith(module_name + ".")
+
+
+@dataclasses.dataclass(frozen=True)
+class SourceFilePath:
+    root_path: Path
+    file_path: Path
+
+    @property
+    def module_path(self) -> ModulePath:
+        relative_path = self.relative_path_from_root
+
+        # root直下のファイルの場合、ファイル名がそのままモジュール名
+        # そこからparentを辿ろうとするとパス表現が壊れる（"."になる）ため、root直下の場合は別で処理する
+        if str(relative_path) == relative_path.name:
+            return ModulePath(names=[relative_path.stem])
+
+        # ディレクトリ配下の場合はパッケージファイル（__init__.py）の可能性もあるのでそれを考慮する
+        dirname = relative_path.parent
+
+        names = str(dirname).split(os.sep)
+        if relative_path.stem != "__init__":
+            names.append(relative_path.stem)
+
+        return ModulePath(names=names)
+
+    @property
+    def filename(self) -> str:
+        return self.file_path.name
+
+    def module_path_with_level(self, level: int) -> ModulePath:
+        """
+        levelの数だけ上位に上ったパスを返します。
+        :param level:
+        :return:
+        """
+        assert level >= 1
+
+        parent = self.relative_path_from_root.parents[level - 1]
+
+        names = str(parent).split(os.sep)
+
+        return ModulePath(names=names)
+
+    def import_from_to_module_paths(self, import_from: ImportFrom) -> List[ModulePath]:
+        """
+        このソースファイルパスを基準にimport from を解決し、ModulePathのリストを返します。
+        :param import_from:
+        :return:
+        """
+        level = import_from.level if import_from.level is not None else 0
+
+        if level < 1:
+            assert import_from.module is not None
+
+            p = ModulePath.from_str(import_from.module)
+            return [p.join(alias.name) for alias in import_from.names]
+
+        p = self.module_path_with_level(level)
+
+        if import_from.module:
+            p = p.join(import_from.module)
+
+        return [p.join(alias.name) for alias in import_from.names]
+
+    @property
+    def relative_path_from_root(self) -> Path:
+        # Path.relative_to は文字列化したパスから算出されるので絶対パスに揃えてから利用する
+        root_path = self.root_path.absolute()
+        file_path = self.file_path.absolute()
+
+        return file_path.relative_to(root_path)
+
+    @property
+    def is_package(self):
+        return self.file_path.stem == "__init__"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -99,7 +139,7 @@ class ImportModuleCollection:
     @classmethod
     def build_by_import_ast(cls, import_ast: Import) -> "ImportModuleCollection":
         imports = [
-            ImportModule(module_path=ModulePath(path=name.name))
+            ImportModule(module_path=ModulePath(names=[name.name]))
             for name in import_ast.names
         ]
 
@@ -107,51 +147,39 @@ class ImportModuleCollection:
 
     @classmethod
     def build_by_import_from_ast(
-        cls, file_path: FilePath, import_from: ImportFrom
+        cls, file_path: SourceFilePath, import_from: ImportFrom
     ) -> "ImportModuleCollection":
-        level = import_from.level if import_from.level is not None else 0
 
-        imports = []
-        for alias in import_from.names:
-            # from xxx が.が含まれない場合、空配列
-            path_list = file_path.dirpath_list_with_relative_level(level)
-
-            # from句に名前指定がないときNone（from . や from .. など）
-            # .fooなら"foo"が入る
-            if import_from.module:
-                path_list.append(import_from.module)
-
-            if alias.name:
-                path_list.append(alias.name)
-
-            path = ModulePath(".".join(path_list))
-
-            imports.append(ImportModule(path))
-
-        return cls(_modules=imports)
+        imports = file_path.import_from_to_module_paths(import_from)
+        return cls(
+            _modules=[ImportModule(module_path=module_path) for module_path in imports]
+        )
 
 
 @dataclasses.dataclass(frozen=True)
 class SourceFile:
-    path: FilePath
+    source_file_path: SourceFilePath
     size: int
     content: str = dataclasses.field(repr=False)
 
     @property
     def filename(self):
-        return self.path.filename
+        return self.source_file_path.filename
 
     @property
     def module_path(self) -> ModulePath:
-        return ModulePath.build_by_file_path(self.path)
+        return self.source_file_path.module_path
 
 
 @dataclasses.dataclass(frozen=True)
 class SourceCode:
     file: SourceFile
-    module_path: ModulePath
     import_modules: ImportModuleCollection
     class_defs: List[ClassDef]
+
+    @property
+    def module_path(self) -> ModulePath:
+        return self.file.module_path
 
     @classmethod
     def build(cls, file: SourceFile) -> "SourceCode":
@@ -161,7 +189,6 @@ class SourceCode:
 
         return SourceCode(
             file=file,
-            module_path=ModulePath.build_by_file_path(path=file.path),
             import_modules=cls._build_import_modules(file, jig_source_code),
             class_defs=jig_source_code.class_defs,
         )
@@ -169,14 +196,14 @@ class SourceCode:
     def module_dependencies(self, module_names: List[str]) -> List[Tuple[str, str]]:
         if not module_names:
             return [
-                (self.module_path.path, module.module_path.path)
+                (str(self.module_path), str(module.module_path))
                 for module in self.import_modules
             ]
 
         dependencies = []
         for module in self.import_modules:
             if module.module_path.match_module_names(module_names):
-                dependencies.append((self.module_path.path, module.module_path.path))
+                dependencies.append((str(self.module_path), str(module.module_path)))
 
         return dependencies
 
@@ -191,7 +218,7 @@ class SourceCode:
 
         for import_from_ast in jig_source_code.import_froms:
             import_modules += ImportModuleCollection.build_by_import_from_ast(
-                file_path=file.path, import_from=import_from_ast
+                file_path=file.source_file_path, import_from=import_from_ast
             )
 
         return import_modules
@@ -212,6 +239,7 @@ class SourceCodeCollection:
 
     def get_by_relative_path(self, relative_path: str) -> Optional[SourceCode]:
         for source_code in self.collection:
-            if source_code.file.path.relative_path == relative_path:
+            source_file_path = source_code.file.source_file_path
+            if str(source_file_path.relative_path_from_root) == relative_path:
                 return source_code
         return None

@@ -1,17 +1,19 @@
-from jig.collector.domain import FilePath, ModulePath
+from jig.collector.domain import ModulePath
+
+
+def mod(path: str) -> ModulePath:
+    return ModulePath.from_str(path)
 
 
 class TestModulePath:
-    def test_build_by_file_path(self):
-        path = FilePath(root_path="/root", relative_path="path/to/file.py")
-        module_path = ModulePath.build_by_file_path(path)
+    def test_from_str(self):
+        p = ModulePath(names=["jig", "collector", "domain"])
+        assert p == ModulePath.from_str("jig.collector.domain")
 
-        assert isinstance(module_path, ModulePath)
-        assert module_path.path == "path.to.file"
+    def test_str(self):
+        p = mod("jig.collector.domain")
+        assert str(p) == "jig.collector.domain"
 
-    def test_build_by_file_path_init(self):
-        path = FilePath(root_path="/root", relative_path="path/to/package/__init__.py")
-        module_path = ModulePath.build_by_file_path(path)
-
-        assert isinstance(module_path, ModulePath)
-        assert module_path.path == "path.to.package"
+    def test_join(self):
+        p = mod("jig.collector.domain")
+        assert p.join("mod") == mod("jig.collector.domain.mod")

@@ -1,19 +1,30 @@
-from jig.collector.domain import SourceCode, SourceFile, FilePath, SourceCodeCollection
+from pathlib import Path
+
+from jig.collector.domain import (
+    SourceCode,
+    SourceFile,
+    SourceCodeCollection,
+    SourceFilePath,
+)
 
 
 class TestSourceCode:
     def test_build(self):
-        root_path = "/path/to/something"
+        root_path = "/root"
         main_py = SourceCode.build(
             file=SourceFile(
-                path=FilePath(root_path=root_path, relative_path="main.py"),
+                source_file_path=SourceFilePath(
+                    root_path=Path(root_path), file_path=Path("/root/main.py")
+                ),
                 size=0,
                 content="",
             )
         )
         test_py = SourceCode.build(
             file=SourceFile(
-                path=FilePath(root_path=root_path, relative_path="test.py"),
+                source_file_path=SourceFilePath(
+                    root_path=Path(root_path), file_path=Path("/root/test.py")
+                ),
                 size=0,
                 content="",
             )
@@ -25,3 +36,20 @@ class TestSourceCode:
         assert len(collection) == 2
         assert collection.get_by_relative_path("main.py") == main_py
         assert collection.get_by_relative_path("test.py") == test_py
+
+    def test_module_dependencies(self):
+        source_file_path = SourceFilePath(
+            root_path=Path("/root"), file_path=Path("/root/main.py")
+        )
+        assert str(source_file_path.module_path) == "main"
+
+        code = SourceCode.build(
+            file=SourceFile(
+                source_file_path=source_file_path,
+                size=100,
+                content="from os import path",
+            )
+        )
+
+        assert code.module_dependencies(module_names=[]) == [("main", "os.path")]
+        assert code.module_dependencies(module_names=["jig"]) == []

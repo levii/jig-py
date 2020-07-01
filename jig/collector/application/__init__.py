@@ -3,9 +3,12 @@ import os
 from pathlib import Path
 from typing import List
 
-from jig.collector.domain import FilePath, SourceCodeCollection
-from jig.collector.domain import SourceCode
-from jig.collector.domain import SourceFile
+from jig.collector.domain import (
+    SourceCode,
+    SourceCodeCollection,
+    SourceFile,
+    SourceFilePath,
+)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -23,14 +26,11 @@ class SourceCodeCollector:
 
     def collect_file(self, target_path: Path) -> SourceCode:
         source = target_path.read_text()
-        relative_path = str(
-            target_path.absolute().relative_to(self.root_path.absolute())
-        )
 
         return SourceCode.build(
             file=SourceFile(
-                path=FilePath(
-                    root_path=str(self.root_path), relative_path=relative_path
+                source_file_path=SourceFilePath(
+                    root_path=self.root_path, file_path=target_path
                 ),
                 content=source,
                 size=os.path.getsize(str(target_path)),

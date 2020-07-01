@@ -1,15 +1,17 @@
-from jig.collector.domain import FilePath
-from jig.collector.domain import SourceCode
+from pathlib import Path
+
 from jig.collector.domain import (
     SourceFile,
+    SourceFilePath,
     ModulePath,
     ImportModule,
     ImportModuleCollection,
+    SourceCode,
 )
 
 
 def collection(*args):
-    modules = [ImportModule(ModulePath(p)) for p in args]
+    modules = [ImportModule(ModulePath.from_str(p)) for p in args]
 
     return ImportModuleCollection(modules)
 
@@ -17,14 +19,18 @@ def collection(*args):
 class TestSourceCodeASTGetImports:
     ROOT_PATH = "/jig-py"
     SOURCE_PATH = "/jig-py/jig/collector/domain/__init__.py"
-    FILE_PATH = FilePath.build_with_abspath(root_path=ROOT_PATH, abspath=SOURCE_PATH)
+    SOURCE_FILE_PATH = SourceFilePath(
+        root_path=Path(ROOT_PATH), file_path=Path(SOURCE_PATH)
+    )
 
     def test_multiple_modules(self):
         content = """
 import os, datetime
         """
 
-        file = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
+        file = SourceFile(
+            source_file_path=self.SOURCE_FILE_PATH, content=content, size=len(content),
+        )
         ast = SourceCode.build(file)
 
         assert ast.import_modules == collection("os", "datetime")
@@ -35,7 +41,9 @@ import os
 import datetime as dt
         """
 
-        file = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
+        file = SourceFile(
+            source_file_path=self.SOURCE_FILE_PATH, content=content, size=len(content),
+        )
         ast = SourceCode.build(file)
 
         assert ast.import_modules == collection("os", "datetime")
@@ -45,7 +53,9 @@ import datetime as dt
 from os import path
         """
 
-        file = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
+        file = SourceFile(
+            source_file_path=self.SOURCE_FILE_PATH, content=content, size=len(content),
+        )
         ast = SourceCode.build(file)
 
         assert ast.import_modules == collection("os.path")
@@ -59,7 +69,9 @@ from . import submodule
 from .. import jig_ast
         """
 
-        file = SourceFile(path=self.FILE_PATH, content=content, size=len(content))
+        file = SourceFile(
+            source_file_path=self.SOURCE_FILE_PATH, content=content, size=len(content),
+        )
         ast = SourceCode.build(file)
 
         modules = [
