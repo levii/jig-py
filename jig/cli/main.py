@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Optional, List
 
 import fire
@@ -119,10 +120,10 @@ class Main:
         if not root_path:
             root_path = os.getcwd()
 
-        root_path = os.path.abspath(root_path)
-
         return list(
-            SourceCodeCollector(root_path=root_path).collect(target_path=target_path)
+            SourceCodeCollector(root_path=Path(root_path)).collect(
+                target_path=Path(target_path)
+            )
         )
 
 

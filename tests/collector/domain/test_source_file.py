@@ -1,11 +1,15 @@
-from jig.collector.domain import FilePath
+from pathlib import Path
+
+from jig.collector.domain import SourceFilePath
 from jig.collector.domain import SourceFile
 
 
 class TestSourceFile:
     def test_build(self):
         source_file = SourceFile(
-            path=FilePath(root_path="/root", relative_path="path/to/file.py"),
+            source_file_path=SourceFilePath(
+                root_path=Path("/root"), file_path=Path("path/to/file.py")
+            ),
             size=123,
             content="this is content",
         )
