@@ -17,3 +17,10 @@ class TestModulePath:
     def test_join(self):
         p = mod("jig.collector.domain")
         assert p.join("mod") == mod("jig.collector.domain.mod")
+
+    def test_add(self):
+        m1 = mod("aaa.bbb")
+        m2 = mod("xxx.yyy")
+
+        assert m1 + m2 == mod("aaa.bbb.xxx.yyy")
+        assert m2 + m1 == mod("xxx.yyy.aaa.bbb")

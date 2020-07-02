@@ -93,3 +93,16 @@ class TestImportModuleCollectionBuildByImportFromAST:
             ImportModule(ModulePath.from_str("jig.collector.jig_ast.submodule"))
             in import_modules
         )
+
+    def test_import_from_nested_module(self):
+        import_from = parse_import_from("from .aaa.bbb import xxx")
+
+        import_modules = ImportModuleCollection.build_by_import_from_ast(
+            file_path=self.SOURCE_FILE_PATH, import_from=import_from
+        )
+
+        assert len(import_modules) == 1
+        assert (
+            ImportModule(ModulePath.from_str("jig.collector.domain.aaa.bbb.xxx"))
+            in import_modules
+        )
