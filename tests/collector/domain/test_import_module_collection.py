@@ -2,7 +2,15 @@ from pathlib import Path
 
 from jig.collector.domain import SourceFilePath, ModulePath
 from jig.collector.domain import ImportModule, ImportModuleCollection
-from .helper import parse_import_from
+from .helper import parse_import_from, parse_import
+
+
+def mod_collections(*modules) -> ImportModuleCollection:
+    return ImportModuleCollection(
+        _modules=[
+            ImportModule(module_path=ModulePath.from_str(module)) for module in modules
+        ]
+    )
 
 
 class TestImportModuleCollectionBuildByImportFromAST:
@@ -106,3 +114,23 @@ class TestImportModuleCollectionBuildByImportFromAST:
             ImportModule(ModulePath.from_str("jig.collector.domain.aaa.bbb.xxx"))
             in import_modules
         )
+
+
+class TestImportModuleCollectionBuildByImportAST:
+    def test_one_module(self):
+        import_ast = parse_import("import os")
+
+        import_modules = ImportModuleCollection.build_by_import_ast(import_ast)
+        assert import_modules == mod_collections("os")
+
+    def test_nested_module(self):
+        import_ast = parse_import("import datetime.datetime")
+
+        import_modules = ImportModuleCollection.build_by_import_ast(import_ast)
+        assert import_modules == mod_collections("datetime.datetime")
+
+    def test_multiple_modules(self):
+        import_ast = parse_import("import os, datetime.datetime")
+
+        import_modules = ImportModuleCollection.build_by_import_ast(import_ast)
+        assert import_modules == mod_collections("os", "datetime.datetime")

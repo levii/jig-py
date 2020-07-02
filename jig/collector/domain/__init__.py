@@ -143,7 +143,7 @@ class ImportModuleCollection:
     @classmethod
     def build_by_import_ast(cls, import_ast: Import) -> "ImportModuleCollection":
         imports = [
-            ImportModule(module_path=ModulePath(names=[name.name]))
+            ImportModule(module_path=ModulePath.from_str(name.name))
             for name in import_ast.names
         ]
 
