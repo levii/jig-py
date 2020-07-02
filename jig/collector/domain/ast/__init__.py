@@ -21,6 +21,15 @@ class Import:
     names: List[Alias]
     _ast: ast.Import = dataclasses.field(repr=False, compare=False)
 
+    @classmethod
+    def from_ast(cls, import_ast: ast.Import) -> "Import":
+        names = [
+            Alias(name=name_alias.name, asname=name_alias.asname)
+            for name_alias in import_ast.names
+        ]
+
+        return cls(names=names, _ast=import_ast)
+
 
 @dataclasses.dataclass(frozen=True)
 class ImportFrom:
@@ -108,15 +117,7 @@ class ImportVisitor(ast.NodeVisitor):
     imports: List[Import] = dataclasses.field(default_factory=list)
 
     def visit_Import(self, node):
-        self.imports.append(
-            Import(
-                names=[
-                    Alias(name=name_alias.name, asname=name_alias.asname)
-                    for name_alias in node.names
-                ],
-                _ast=node,
-            )
-        )
+        self.imports.append(Import.from_ast(node))
 
 
 @dataclasses.dataclass

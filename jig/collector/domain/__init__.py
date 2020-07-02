@@ -12,7 +12,11 @@ class ModulePath:
     names: List[str]
 
     def __post_init__(self):
-        assert any([name.find(".") < 0 for name in self.names])
+        if any([name.find(".") >= 0 for name in self.names]):
+            raise ValueError(f"An invalid name specified in `{self.names}`")
+
+    def __add__(self, other: "ModulePath") -> "ModulePath":
+        return ModulePath(names=self.names + other.names)
 
     def join(self, name: str) -> "ModulePath":
         """
@@ -98,7 +102,7 @@ class SourceFilePath:
         p = self.module_path_with_level(level)
 
         if import_from.module:
-            p = p.join(import_from.module)
+            p += ModulePath.from_str(import_from.module)
 
         return [p.join(alias.name) for alias in import_from.names]
 
@@ -139,7 +143,7 @@ class ImportModuleCollection:
     @classmethod
     def build_by_import_ast(cls, import_ast: Import) -> "ImportModuleCollection":
         imports = [
-            ImportModule(module_path=ModulePath(names=[name.name]))
+            ImportModule(module_path=ModulePath.from_str(name.name))
             for name in import_ast.names
         ]
 
