@@ -2,7 +2,7 @@ import setuptools
 
 
 name = "jig-py"
-version = "0.0.2a0"
+version = "0.0.2"
 description = "Jig for Python"
 dependencies = []
 
