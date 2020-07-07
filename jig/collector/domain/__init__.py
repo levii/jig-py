@@ -1,7 +1,7 @@
 import dataclasses
 import os
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List, Optional
 
 from jig.collector.domain.ast import ClassDef, JigSourceCode
 from jig.collector.domain.ast import Import, ImportFrom
@@ -25,6 +25,21 @@ class ModulePath:
         :return:
         """
         return ModulePath(names=self.names + [name])
+
+    @property
+    def depth(self):
+        return len(self.names)
+
+    def belongs_to(self, other: "ModulePath") -> bool:
+        """
+        パスがotherに含まれているかどうかを返します。
+        :param other:
+        :return:
+        """
+        if self.depth < other.depth:
+            return False
+
+        return all([p1 == p2 for p1, p2 in zip(self.names, other.names)])
 
     def __str__(self) -> str:
         return ".".join(self.names)
@@ -159,6 +174,9 @@ class ImportModuleCollection:
             _modules=[ImportModule(module_path=module_path) for module_path in imports]
         )
 
+    def to_module_path_list(self) -> List[ModulePath]:
+        return [module.module_path for module in self._modules]
+
 
 @dataclasses.dataclass(frozen=True)
 class SourceFile:
@@ -173,6 +191,12 @@ class SourceFile:
     @property
     def module_path(self) -> ModulePath:
         return self.source_file_path.module_path
+
+
+@dataclasses.dataclass(frozen=True)
+class ModuleDependency:
+    src: ModulePath
+    dest: ModulePath
 
 
 @dataclasses.dataclass(frozen=True)
@@ -197,17 +221,21 @@ class SourceCode:
             class_defs=jig_source_code.class_defs,
         )
 
-    def module_dependencies(self, module_names: List[str]) -> List[Tuple[str, str]]:
+    def module_dependencies(
+        self, module_names: List[str] = None
+    ) -> List[ModuleDependency]:
         if not module_names:
             return [
-                (str(self.module_path), str(module.module_path))
+                ModuleDependency(src=self.module_path, dest=module.module_path)
                 for module in self.import_modules
             ]
 
         dependencies = []
         for module in self.import_modules:
             if module.module_path.match_module_names(module_names):
-                dependencies.append((str(self.module_path), str(module.module_path)))
+                dependencies.append(
+                    ModuleDependency(src=self.module_path, dest=module.module_path)
+                )
 
         return dependencies
 

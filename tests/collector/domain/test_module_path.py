@@ -24,3 +24,11 @@ class TestModulePath:
 
         assert m1 + m2 == mod("aaa.bbb.xxx.yyy")
         assert m2 + m1 == mod("xxx.yyy.aaa.bbb")
+
+    def test_belongs_to(self):
+        m1 = mod("aaa.bbb")
+        m2 = mod("aaa.bbb.ccc")
+
+        assert m1.belongs_to(m1)
+        assert not m1.belongs_to(m2)
+        assert m2.belongs_to(m1)
