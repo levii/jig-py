@@ -30,6 +30,15 @@ class ModulePath:
     def depth(self):
         return len(self.names)
 
+    def path_in_depth(self, depth: int) -> "ModulePath":
+        """
+        このパスを指定されたdepthだけ辿ったパスを新たに返します
+        :param depth:
+        :return:
+        """
+        assert depth > 0
+        return ModulePath(names=self.names[:depth])
+
     def belongs_to(self, other: "ModulePath") -> bool:
         """
         パスがotherに含まれているかどうかを返します。

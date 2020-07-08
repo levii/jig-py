@@ -32,3 +32,14 @@ class TestModulePath:
         assert m1.belongs_to(m1)
         assert not m1.belongs_to(m2)
         assert m2.belongs_to(m1)
+
+    def test_depth(self):
+        assert mod("aaa").depth == 1
+        assert mod("aaa.bbb").depth == 2
+        assert mod("aaa.bbb.ccc").depth == 3
+
+    def test_path_in_depth(self):
+        assert mod("aaa.bbb.ccc").path_in_depth(1) == mod("aaa")
+        assert mod("aaa.bbb.ccc").path_in_depth(2) == mod("aaa.bbb")
+        assert mod("aaa.bbb.ccc").path_in_depth(3) == mod("aaa.bbb.ccc")
+        assert mod("aaa.bbb.ccc").path_in_depth(4) == mod("aaa.bbb.ccc")

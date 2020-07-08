@@ -1,22 +1,23 @@
 import os
 from pathlib import Path
-from typing import List
 
 import fire
 
+from jig.analizer.application import ModuleDependencyAnalyzer
+from jig.analizer.domain import SourceCodeList
 from jig.collector.application import SourceCodeCollector
-from jig.collector.domain import SourceCode
-from jig.visualizer.application import DependencyImageVisualizer
+from jig.visualizer.application import ModuleDependencyVisualizer
 
 
-def _collect_source_codes(target_path: str) -> List[SourceCode]:
+def _collect_source_codes(target_path: str) -> SourceCodeList:
     root_path = os.getcwd()
 
-    return list(
+    source_code_list = list(
         SourceCodeCollector(root_path=Path(root_path)).collect(
             target_path=Path(target_path)
         )
     )
+    return SourceCodeList(_source_codes=source_code_list)
 
 
 def output_dependency_images(target_path, output_dir="output"):
@@ -27,11 +28,15 @@ def output_dependency_images(target_path, output_dir="output"):
     :param output_dir: 解析結果の出力ディレクトリを指定します（デフォルト: output）
     :return:
     """
+
     for depth in range(1, 6):
         source_codes = _collect_source_codes(target_path=target_path)
-        dot = DependencyImageVisualizer(source_codes=source_codes, module_names=[])
 
-        dot.visualize(depth=depth, output_dir=output_dir)
+        analyzer = ModuleDependencyAnalyzer(source_code_list=source_codes)
+        dependencies = analyzer.analyze()
+
+        visualizer = ModuleDependencyVisualizer(dependencies=dependencies)
+        visualizer.visualize(depth=depth, output_dir=output_dir)
 
 
 def main():
