@@ -5,6 +5,8 @@ from jig.collector.domain import (
     SourceFile,
     SourceCodeCollection,
     SourceFilePath,
+    ModuleDependency,
+    ModulePath,
 )
 
 
@@ -51,5 +53,9 @@ class TestSourceCode:
             )
         )
 
-        assert code.module_dependencies(module_names=[]) == [("main", "os.path")]
+        assert code.module_dependencies() == [
+            ModuleDependency(
+                src=ModulePath.from_str("main"), dest=ModulePath.from_str("os.path")
+            )
+        ]
         assert code.module_dependencies(module_names=["jig"]) == []

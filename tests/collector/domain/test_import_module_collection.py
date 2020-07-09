@@ -118,3 +118,12 @@ class TestImportModuleCollectionBuildByImportAST:
 
         import_modules = ImportModuleCollection.build_by_import_ast(import_ast)
         assert import_modules == mod_collections("os", "datetime.datetime")
+
+    def test_to_module_path_list(self):
+        import_ast = parse_import("import os, datetime.datetime")
+
+        import_modules = ImportModuleCollection.build_by_import_ast(import_ast)
+        assert import_modules.to_module_path_list() == [
+            ModulePath.from_str("os"),
+            ModulePath.from_str("datetime.datetime"),
+        ]

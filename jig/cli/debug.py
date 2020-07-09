@@ -4,6 +4,8 @@ from typing import Optional, List
 
 import fire
 
+from jig.analizer.application import ModuleDependencyAnalyzer
+from jig.analizer.domain import SourceCodeList
 from jig.collector.application import SourceCodeCollector
 from jig.collector.domain import SourceCode
 from jig.visualizer.application import (
@@ -14,6 +16,48 @@ from jig.visualizer.application import (
 
 
 class Main:
+    def modules(self, target_path: str, root_path: Optional[str] = None) -> None:
+        """
+        指定されたパスのモジュール名を表示します。
+        ディレクトリを指定した場合は再帰的にPythonファイルを収集し、全てのソースコード
+        のモジュール名をリストで表示します。
+        :param target_path: 解析対象のソースファイルまたはディレクトリへのパス
+        :param root_path: 解析対象Pythonコードのルートディレクトリパス
+        :return:
+        """
+        source_codes = self._collect_source_codes(
+            target_path=target_path, root_path=root_path
+        )
+        for source_code in source_codes:
+            print(str(source_code.module_path))
+
+    def module_imports(self, target_path: str, root_path: Optional[str] = None) -> None:
+        """
+        指定されたパスのモジュールのインポートしているモジュールリストを表示します。
+        ディレクトリを指定した場合は再帰的にPythonファイルを収集し、全てのソースコード
+        のモジュールのインポートしているモジュールをリストで表示します。
+        :param target_path: 解析対象のソースファイルまたはディレクトリへのパス
+        :param root_path: 解析対象Pythonコードのルートディレクトリパス
+        :return:
+        """
+        source_codes = self._collect_source_codes(
+            target_path=target_path, root_path=root_path
+        )
+        for source_code in source_codes:
+            for import_module in source_code.import_modules:
+                print(str(source_code.module_path), str(import_module.module_path))
+
+    def module_deps(self, target_path: str, root_path: Optional[str] = None) -> None:
+        source_codes = self._collect_source_codes(
+            target_path=target_path, root_path=root_path
+        )
+        analyzer = ModuleDependencyAnalyzer(
+            source_code_list=SourceCodeList(_source_codes=source_codes)
+        )
+
+        for dependency in analyzer.analyze():
+            print(str(dependency.src), str(dependency.dest))
+
     def source_codes(self, target_path: str, root_path: Optional[str] = None) -> None:
         """
         指定されたパスのPythonソースコード解析結果を表示します。
