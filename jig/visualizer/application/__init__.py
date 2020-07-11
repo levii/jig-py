@@ -113,6 +113,14 @@ class ModuleDependencyVisualizer:
 
         return "\n".join(graph_text)
 
+    def render_dot_text(self, depth: int, output_dir: str) -> None:
+        os.makedirs(output_dir, exist_ok=True)
+
+        filepath = os.path.join(output_dir, f"dependency{depth}.dot")
+
+        with open(filepath, mode="w") as f:
+            f.write(self.dot_text(depth))
+
     def visualize(self, depth: int, output_dir: str) -> None:
         dot = self.dot_text(depth)
 

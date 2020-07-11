@@ -37,6 +37,7 @@ def output_dependency_images(target_path, output_dir="output"):
 
         visualizer = ModuleDependencyVisualizer(dependencies=dependencies)
         visualizer.visualize(depth=depth, output_dir=output_dir)
+        visualizer.render_dot_text(depth=depth, output_dir=output_dir)
 
 
 def main():
