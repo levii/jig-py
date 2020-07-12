@@ -6,7 +6,6 @@ from jig.collector.domain.source_code.source_code_import_dependency import (
     SourceCodeImportDependency,
 )
 from jig.collector.domain.values.import_path_collection import ImportPathCollection
-from jig.analyzer.domain.dependency.module_dependency import ModuleDependency
 from jig.collector.domain.values.module_path import ModulePath
 from jig.collector.domain.source_file.source_file import SourceFile
 
@@ -32,29 +31,6 @@ class SourceCode:
             import_paths=cls._build_import_paths(file, jig_source_code),
             class_defs=jig_source_code.class_defs,
         )
-
-    def module_dependencies(
-        self, module_names: List[str] = None
-    ) -> List[ModuleDependency]:
-        if not module_names:
-            return [
-                ModuleDependency(
-                    src=self.module_path, dest=ModulePath.from_str(str(import_path)),
-                )
-                for import_path in self.import_paths
-            ]
-
-        dependencies = []
-        for import_path in self.import_paths:
-            if import_path.match_module_names(module_names):
-                dependencies.append(
-                    ModuleDependency(
-                        src=self.module_path,
-                        dest=ModulePath.from_str(str(import_path)),
-                    )
-                )
-
-        return dependencies
 
     @classmethod
     def _build_import_paths(

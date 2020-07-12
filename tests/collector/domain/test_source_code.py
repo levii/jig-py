@@ -8,7 +8,6 @@ from jig.collector.domain.values.import_path_collection import ImportPathCollect
 from jig.collector.domain.values.module_path import ModulePath
 from jig.collector.domain.source_code.source_code import SourceCode
 from jig.collector.domain.source_code.source_code_collection import SourceCodeCollection
-from jig.analyzer.domain.dependency.module_dependency import ModuleDependency
 from jig.collector.domain.source_file.source_file import SourceFile
 from jig.collector.domain.source_file.source_file_path import SourceFilePath
 
@@ -41,27 +40,6 @@ class TestSourceCode:
         assert len(collection) == 2
         assert collection.get_by_relative_path("main.py") == main_py
         assert collection.get_by_relative_path("test.py") == test_py
-
-    def test_module_dependencies(self):
-        source_file_path = SourceFilePath(
-            root_path=Path("/root"), file_path=Path("/root/main.py")
-        )
-        assert str(source_file_path.module_path) == "main"
-
-        code = SourceCode.build(
-            file=SourceFile(
-                source_file_path=source_file_path,
-                size=100,
-                content="from os import path",
-            )
-        )
-
-        assert code.module_dependencies() == [
-            ModuleDependency(
-                src=ModulePath.from_str("main"), dest=ModulePath.from_str("os.path")
-            )
-        ]
-        assert code.module_dependencies(module_names=["jig"]) == []
 
     def test_build_import_dependency(self):
         source_file_path = SourceFilePath(
