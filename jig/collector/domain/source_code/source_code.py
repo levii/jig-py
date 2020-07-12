@@ -2,6 +2,9 @@ import dataclasses
 from typing import List
 
 from jig.collector.domain.ast import ClassDef, JigSourceCode
+from jig.collector.domain.source_code.source_code_import_dependency import (
+    SourceCodeImportDependency,
+)
 from jig.collector.domain.values.import_path_collection import ImportPathCollection
 from jig.collector.domain.values.module_dependency import ModuleDependency
 from jig.collector.domain.values.module_path import ModulePath
@@ -68,3 +71,8 @@ class SourceCode:
             )
 
         return import_paths
+
+    def build_import_dependency(self) -> SourceCodeImportDependency:
+        return SourceCodeImportDependency.build(
+            source_module_path=self.file.module_path, import_paths=self.import_paths
+        )
