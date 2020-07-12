@@ -1,7 +1,7 @@
 from typing import List
 
-from jig.analyzer.domain import ModuleDependency
 from jig.analyzer.domain.dependency.import_dependency import ImportDependencyCollection
+from jig.analyzer.domain.dependency.module_dependency import ModuleDependency
 from jig.collector.domain.source_code.source_code_import_dependency import (
     SourceCodeImportDependency,
 )

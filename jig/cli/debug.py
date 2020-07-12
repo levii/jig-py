@@ -9,7 +9,6 @@ from jig.collector.application import SourceCodeCollector
 from jig.collector.domain.source_code.source_code import SourceCode
 from jig.collector.domain.source_code.source_code_collection import SourceCodeCollection
 from jig.visualizer.application import (
-    DependencyTextVisualizer,
     DotTextVisualizer,
     DependencyImageVisualizer,
 )
@@ -73,32 +72,6 @@ class Main:
             target_path=target_path, root_path=root_path
         )
         print(source_codes)
-
-    def dependency_text(
-        self,
-        target_path: str,
-        root_path: Optional[str] = None,
-        module_names: List[str] = None,
-    ) -> None:
-        """
-        指定されたパスのPythonソースコードを解析し、モジュール依存関係を表示します。
-        ディレクトリを指定した場合はそのディレクトリ配下のPythonファイルを再帰的に
-        収集して解析します。
-        :param target_path: 解析対象のソースファイルまたはディレクトリへのパス
-        :param root_path: 解析対象Pythonコードのルートディレクトリパス
-        :param module_names: 出力結果に含めるモジュールのパスプレフィックス。"jig"を指定した場合、"jig.xxx.yyy" といった
-                             モジュールだけが結果に含まれるようになります。複数指定したい場合は配列形式で指定します。
-                             （例: --module_names "[jig, os]"）
-        :return:
-        """
-        source_codes = self._collect_source_codes(
-            target_path=target_path, root_path=root_path
-        )
-        print(
-            DependencyTextVisualizer(
-                source_codes=source_codes, module_names=module_names or []
-            ).visualize()
-        )
 
     def dot_text(
         self,

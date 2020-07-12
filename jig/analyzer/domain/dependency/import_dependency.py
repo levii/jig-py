@@ -1,7 +1,7 @@
 import dataclasses
 from typing import List, Dict, Optional
 
-from jig.analyzer.domain import ModuleDependency
+from jig.analyzer.domain.dependency.module_dependency import ModuleDependency
 from jig.collector.domain.source_code.source_code_collection import SourceCodeCollection
 from jig.collector.domain.source_code.source_code_import_dependency import (
     SourceCodeImportDependency,
