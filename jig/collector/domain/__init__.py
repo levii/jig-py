@@ -146,18 +146,13 @@ class SourceFilePath:
 
 
 @dataclasses.dataclass(frozen=True)
-class ImportModule:
-    import_path: ImportPath
-
-
-@dataclasses.dataclass(frozen=True)
 class ImportPathCollection:
-    _paths: List[ImportModule] = dataclasses.field(default_factory=list)
+    _paths: List[ImportPath] = dataclasses.field(default_factory=list)
 
     def __len__(self) -> int:
         return len(self._paths)
 
-    def __contains__(self, item: ImportModule):
+    def __contains__(self, item: ImportPath):
         return item in self._paths
 
     def __add__(self, other: "ImportPathCollection") -> "ImportPathCollection":
@@ -168,10 +163,7 @@ class ImportPathCollection:
 
     @classmethod
     def build_by_import_ast(cls, import_ast: Import) -> "ImportPathCollection":
-        imports = [
-            ImportModule(import_path=ImportPath.from_str(name.name))
-            for name in import_ast.names
-        ]
+        imports = [ImportPath.from_str(name.name) for name in import_ast.names]
 
         return ImportPathCollection(imports)
 
@@ -181,9 +173,7 @@ class ImportPathCollection:
     ) -> "ImportPathCollection":
 
         imports = file_path.import_from_to_import_paths(import_from)
-        return cls(
-            _paths=[ImportModule(import_path=module_path) for module_path in imports]
-        )
+        return cls(_paths=imports)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -235,19 +225,18 @@ class SourceCode:
         if not module_names:
             return [
                 ModuleDependency(
-                    src=self.module_path,
-                    dest=ModulePath.from_str(str(module.import_path)),
+                    src=self.module_path, dest=ModulePath.from_str(str(import_path)),
                 )
-                for module in self.import_paths
+                for import_path in self.import_paths
             ]
 
         dependencies = []
-        for module in self.import_paths:
-            if module.import_path.match_module_names(module_names):
+        for import_path in self.import_paths:
+            if import_path.match_module_names(module_names):
                 dependencies.append(
                     ModuleDependency(
                         src=self.module_path,
-                        dest=ModulePath.from_str(str(module.import_path)),
+                        dest=ModulePath.from_str(str(import_path)),
                     )
                 )
 

@@ -3,7 +3,6 @@ from pathlib import Path
 from jig.collector.domain import (
     SourceFile,
     SourceFilePath,
-    ImportModule,
     ImportPathCollection,
     SourceCode,
     ImportPath,
@@ -11,7 +10,7 @@ from jig.collector.domain import (
 
 
 def collection(*args):
-    modules = [ImportModule(ImportPath.from_str(p)) for p in args]
+    modules = [ImportPath.from_str(p) for p in args]
 
     return ImportPathCollection(modules)
 

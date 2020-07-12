@@ -9,7 +9,6 @@ from jig.collector.application import SourceCodeCollector
 from jig.collector.domain import (
     ModulePath,
     ImportPathCollection,
-    ImportModule,
     ImportPath,
 )
 
@@ -91,31 +90,15 @@ class TestJigPy20200609:
         )
         assert jig_collector_jig_ast_init.import_paths == ImportPathCollection(
             [
-                ImportModule(ImportPath.from_str("dataclasses")),
-                ImportModule(ImportPath.from_str("typed_ast.ast3")),
-                ImportModule(ImportPath.from_str("typing.List")),
-                ImportModule(
-                    ImportPath.from_str("jig.collector.jig_ast.class_def.ClassDef")
-                ),
-                ImportModule(
-                    ImportPath.from_str(
-                        "jig.collector.jig_ast.class_def.ClassDefVisitor"
-                    )
-                ),
-                ImportModule(
-                    ImportPath.from_str("jig.collector.jig_ast.imports.Import")
-                ),
-                ImportModule(
-                    ImportPath.from_str("jig.collector.jig_ast.imports.ImportFrom")
-                ),
-                ImportModule(
-                    ImportPath.from_str(
-                        "jig.collector.jig_ast.imports.ImportFromVisitor"
-                    )
-                ),
-                ImportModule(
-                    ImportPath.from_str("jig.collector.jig_ast.imports.ImportVisitor")
-                ),
+                ImportPath.from_str("dataclasses"),
+                ImportPath.from_str("typed_ast.ast3"),
+                ImportPath.from_str("typing.List"),
+                ImportPath.from_str("jig.collector.jig_ast.class_def.ClassDef"),
+                ImportPath.from_str("jig.collector.jig_ast.class_def.ClassDefVisitor"),
+                ImportPath.from_str("jig.collector.jig_ast.imports.Import"),
+                ImportPath.from_str("jig.collector.jig_ast.imports.ImportFrom"),
+                ImportPath.from_str("jig.collector.jig_ast.imports.ImportFromVisitor"),
+                ImportPath.from_str("jig.collector.jig_ast.imports.ImportVisitor"),
             ]
         )
 
@@ -127,11 +110,11 @@ class TestJigPy20200609:
         )
         assert jig_collector_application.import_paths == ImportPathCollection(
             [
-                ImportModule(ImportPath.from_str("dataclasses")),
-                ImportModule(ImportPath.from_str("os")),
-                ImportModule(ImportPath.from_str("typing.List")),
-                ImportModule(ImportPath.from_str("jig.collector.domain.FilePath")),
-                ImportModule(ImportPath.from_str("jig.collector.domain.SourceCode")),
-                ImportModule(ImportPath.from_str("jig.collector.domain.SourceFile")),
+                ImportPath.from_str("dataclasses"),
+                ImportPath.from_str("os"),
+                ImportPath.from_str("typing.List"),
+                ImportPath.from_str("jig.collector.domain.FilePath"),
+                ImportPath.from_str("jig.collector.domain.SourceCode"),
+                ImportPath.from_str("jig.collector.domain.SourceFile"),
             ]
         )
