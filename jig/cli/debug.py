@@ -44,7 +44,7 @@ class Main:
             target_path=target_path, root_path=root_path
         )
         for source_code in source_codes:
-            for import_module in source_code.import_modules:
+            for import_module in source_code.import_paths:
                 print(str(source_code.module_path), str(import_module.module_path))
 
     def module_deps(self, target_path: str, root_path: Optional[str] = None) -> None:

@@ -8,7 +8,7 @@ from typing import Optional
 from jig.collector.application import SourceCodeCollector
 from jig.collector.domain import (
     ModulePath,
-    ImportModuleCollection,
+    ImportPathCollection,
     ImportModule,
 )
 
@@ -79,7 +79,7 @@ class TestJigPy20200609:
         jig_init_py = source_code_collection.get_by_relative_path("jig/__init__.py")
         assert jig_init_py.file.content == ""
         assert jig_init_py.module_path == ModulePath.from_str("jig")
-        assert jig_init_py.import_modules == ImportModuleCollection([])
+        assert jig_init_py.import_paths == ImportPathCollection([])
         assert jig_init_py.class_defs == []
 
         jig_collector_jig_ast_init = source_code_collection.get_by_relative_path(
@@ -88,7 +88,7 @@ class TestJigPy20200609:
         assert jig_collector_jig_ast_init.module_path == ModulePath.from_str(
             "jig.collector.jig_ast"
         )
-        assert jig_collector_jig_ast_init.import_modules == ImportModuleCollection(
+        assert jig_collector_jig_ast_init.import_paths == ImportPathCollection(
             [
                 ImportModule(ModulePath.from_str("dataclasses")),
                 ImportModule(ModulePath.from_str("typed_ast.ast3")),
@@ -124,7 +124,7 @@ class TestJigPy20200609:
         assert jig_collector_application.module_path == ModulePath.from_str(
             "jig.collector.application"
         )
-        assert jig_collector_application.import_modules == ImportModuleCollection(
+        assert jig_collector_application.import_paths == ImportPathCollection(
             [
                 ImportModule(ModulePath.from_str("dataclasses")),
                 ImportModule(ModulePath.from_str("os")),

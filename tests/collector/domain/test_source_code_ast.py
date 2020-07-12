@@ -5,7 +5,7 @@ from jig.collector.domain import (
     SourceFilePath,
     ModulePath,
     ImportModule,
-    ImportModuleCollection,
+    ImportPathCollection,
     SourceCode,
 )
 
@@ -13,7 +13,7 @@ from jig.collector.domain import (
 def collection(*args):
     modules = [ImportModule(ModulePath.from_str(p)) for p in args]
 
-    return ImportModuleCollection(modules)
+    return ImportPathCollection(modules)
 
 
 class TestSourceCodeASTGetImports:
@@ -33,7 +33,7 @@ import os, datetime
         )
         ast = SourceCode.build(file)
 
-        assert ast.import_modules == collection("os", "datetime")
+        assert ast.import_paths == collection("os", "datetime")
 
     def test_multiple_lines(self):
         content = """
@@ -46,7 +46,7 @@ import datetime as dt
         )
         ast = SourceCode.build(file)
 
-        assert ast.import_modules == collection("os", "datetime")
+        assert ast.import_paths == collection("os", "datetime")
 
     def test_import_from(self):
         content = """
@@ -58,7 +58,7 @@ from os import path
         )
         ast = SourceCode.build(file)
 
-        assert ast.import_modules == collection("os.path")
+        assert ast.import_paths == collection("os.path")
 
     def test_mixed_import(self):
         content = """
@@ -81,4 +81,4 @@ from .. import jig_ast
             "jig.collector.domain.submodule",
             "jig.collector.jig_ast",
         ]
-        assert ast.import_modules == collection(*modules)
+        assert ast.import_paths == collection(*modules)

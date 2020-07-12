@@ -149,7 +149,7 @@ class ImportModule:
 
 
 @dataclasses.dataclass(frozen=True)
-class ImportModuleCollection:
+class ImportPathCollection:
     _modules: List[ImportModule] = dataclasses.field(default_factory=list)
 
     def __len__(self) -> int:
@@ -158,25 +158,25 @@ class ImportModuleCollection:
     def __contains__(self, item: ImportModule):
         return item in self._modules
 
-    def __add__(self, other: "ImportModuleCollection") -> "ImportModuleCollection":
-        return ImportModuleCollection(self._modules + other._modules)
+    def __add__(self, other: "ImportPathCollection") -> "ImportPathCollection":
+        return ImportPathCollection(self._modules + other._modules)
 
     def __iter__(self):
         return self._modules.__iter__()
 
     @classmethod
-    def build_by_import_ast(cls, import_ast: Import) -> "ImportModuleCollection":
+    def build_by_import_ast(cls, import_ast: Import) -> "ImportPathCollection":
         imports = [
             ImportModule(module_path=ModulePath.from_str(name.name))
             for name in import_ast.names
         ]
 
-        return ImportModuleCollection(imports)
+        return ImportPathCollection(imports)
 
     @classmethod
     def build_by_import_from_ast(
         cls, file_path: SourceFilePath, import_from: ImportFrom
-    ) -> "ImportModuleCollection":
+    ) -> "ImportPathCollection":
 
         imports = file_path.import_from_to_module_paths(import_from)
         return cls(
@@ -211,7 +211,7 @@ class ModuleDependency:
 @dataclasses.dataclass(frozen=True)
 class SourceCode:
     file: SourceFile
-    import_modules: ImportModuleCollection
+    import_paths: ImportPathCollection
     class_defs: List[ClassDef]
 
     @property
@@ -226,7 +226,7 @@ class SourceCode:
 
         return SourceCode(
             file=file,
-            import_modules=cls._build_import_modules(file, jig_source_code),
+            import_paths=cls._build_import_paths(file, jig_source_code),
             class_defs=jig_source_code.class_defs,
         )
 
@@ -236,11 +236,11 @@ class SourceCode:
         if not module_names:
             return [
                 ModuleDependency(src=self.module_path, dest=module.module_path)
-                for module in self.import_modules
+                for module in self.import_paths
             ]
 
         dependencies = []
-        for module in self.import_modules:
+        for module in self.import_paths:
             if module.module_path.match_module_names(module_names):
                 dependencies.append(
                     ModuleDependency(src=self.module_path, dest=module.module_path)
@@ -249,20 +249,20 @@ class SourceCode:
         return dependencies
 
     @classmethod
-    def _build_import_modules(
+    def _build_import_paths(
         cls, file: SourceFile, jig_source_code: JigSourceCode
-    ) -> ImportModuleCollection:
-        import_modules = ImportModuleCollection()
+    ) -> ImportPathCollection:
+        import_paths = ImportPathCollection()
 
         for import_ast in jig_source_code.imports:
-            import_modules += ImportModuleCollection.build_by_import_ast(import_ast)
+            import_paths += ImportPathCollection.build_by_import_ast(import_ast)
 
         for import_from_ast in jig_source_code.import_froms:
-            import_modules += ImportModuleCollection.build_by_import_from_ast(
+            import_paths += ImportPathCollection.build_by_import_from_ast(
                 file_path=file.source_file_path, import_from=import_from_ast
             )
 
-        return import_modules
+        return import_paths
 
 
 @dataclasses.dataclass(frozen=True)
