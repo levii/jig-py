@@ -7,9 +7,7 @@ from .helper import parse_import_from, parse_import
 
 def mod_collections(*modules) -> ImportPathCollection:
     return ImportPathCollection(
-        _modules=[
-            ImportModule(module_path=ModulePath.from_str(module)) for module in modules
-        ]
+        [ImportModule(module_path=ModulePath.from_str(module)) for module in modules]
     )
 
 

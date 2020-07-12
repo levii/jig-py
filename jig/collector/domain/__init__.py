@@ -150,19 +150,19 @@ class ImportModule:
 
 @dataclasses.dataclass(frozen=True)
 class ImportPathCollection:
-    _modules: List[ImportModule] = dataclasses.field(default_factory=list)
+    _paths: List[ImportModule] = dataclasses.field(default_factory=list)
 
     def __len__(self) -> int:
-        return len(self._modules)
+        return len(self._paths)
 
     def __contains__(self, item: ImportModule):
-        return item in self._modules
+        return item in self._paths
 
     def __add__(self, other: "ImportPathCollection") -> "ImportPathCollection":
-        return ImportPathCollection(self._modules + other._modules)
+        return ImportPathCollection(self._paths + other._paths)
 
     def __iter__(self):
-        return self._modules.__iter__()
+        return self._paths.__iter__()
 
     @classmethod
     def build_by_import_ast(cls, import_ast: Import) -> "ImportPathCollection":
@@ -180,11 +180,11 @@ class ImportPathCollection:
 
         imports = file_path.import_from_to_module_paths(import_from)
         return cls(
-            _modules=[ImportModule(module_path=module_path) for module_path in imports]
+            _paths=[ImportModule(module_path=module_path) for module_path in imports]
         )
 
     def to_module_path_list(self) -> List[ModulePath]:
-        return [module.module_path for module in self._modules]
+        return [module.module_path for module in self._paths]
 
 
 @dataclasses.dataclass(frozen=True)
