@@ -1,0 +1,2 @@
+class TestImportDependencyCollection:
+    pass
