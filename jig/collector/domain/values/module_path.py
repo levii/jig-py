@@ -9,6 +9,12 @@ class ModulePath:
     def __post_init__(self):
         if any([name.find(".") >= 0 for name in self.names]):
             raise ValueError(f"An invalid name specified in `{self.names}`")
+        if not self.names:
+            raise ValueError(f"names must have least one element.")
+
+    @classmethod
+    def build(cls, names: List[str]) -> "ModulePath":
+        return cls(names)
 
     def __add__(self, other: "ModulePath") -> "ModulePath":
         return ModulePath(names=self.names + other.names)
@@ -33,6 +39,9 @@ class ModulePath:
         """
         assert depth > 0
         return ModulePath(names=self.names[:depth])
+
+    def parent(self) -> "ModulePath":
+        return self.build(names=self.names[:-1])
 
     def belongs_to(self, other: "ModulePath") -> bool:
         """
