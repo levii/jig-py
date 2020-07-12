@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from jig.collector.domain import SourceFilePath
-from jig.collector.domain import SourceFile
+from jig.collector.domain.source_file.source_file import SourceFile
+from jig.collector.domain.source_file.source_file_path import SourceFilePath
 
 
 class TestSourceFile:

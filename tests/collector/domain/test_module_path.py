@@ -1,4 +1,6 @@
-from jig.collector.domain import ModulePath
+import pytest
+
+from jig.collector.domain.values.module_path import ModulePath
 
 
 def mod(path: str) -> ModulePath:
@@ -43,3 +45,9 @@ class TestModulePath:
         assert mod("aaa.bbb.ccc").path_in_depth(2) == mod("aaa.bbb")
         assert mod("aaa.bbb.ccc").path_in_depth(3) == mod("aaa.bbb.ccc")
         assert mod("aaa.bbb.ccc").path_in_depth(4) == mod("aaa.bbb.ccc")
+
+    def test_parent(self):
+        assert mod("aaa.bbb.ccc").parent() == mod("aaa.bbb")
+
+        with pytest.raises(ValueError, match="least one element"):
+            mod("aaa").parent()

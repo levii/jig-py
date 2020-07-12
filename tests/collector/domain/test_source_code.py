@@ -1,13 +1,15 @@
 from pathlib import Path
 
-from jig.collector.domain import (
-    SourceCode,
-    SourceFile,
-    SourceCodeCollection,
-    SourceFilePath,
-    ModuleDependency,
-    ModulePath,
+from jig.collector.domain.source_code.source_code_import_dependency import (
+    SourceCodeImportDependency,
 )
+from jig.collector.domain.values.import_path import ImportPath
+from jig.collector.domain.values.import_path_collection import ImportPathCollection
+from jig.collector.domain.values.module_path import ModulePath
+from jig.collector.domain.source_code.source_code import SourceCode
+from jig.collector.domain.source_code.source_code_collection import SourceCodeCollection
+from jig.collector.domain.source_file.source_file import SourceFile
+from jig.collector.domain.source_file.source_file_path import SourceFilePath
 
 
 class TestSourceCode:
@@ -39,7 +41,7 @@ class TestSourceCode:
         assert collection.get_by_relative_path("main.py") == main_py
         assert collection.get_by_relative_path("test.py") == test_py
 
-    def test_module_dependencies(self):
+    def test_build_import_dependency(self):
         source_file_path = SourceFilePath(
             root_path=Path("/root"), file_path=Path("/root/main.py")
         )
@@ -49,13 +51,13 @@ class TestSourceCode:
             file=SourceFile(
                 source_file_path=source_file_path,
                 size=100,
-                content="from os import path",
+                content="from os import path, environ",
             )
         )
 
-        assert code.module_dependencies() == [
-            ModuleDependency(
-                src=ModulePath.from_str("main"), dest=ModulePath.from_str("os.path")
-            )
-        ]
-        assert code.module_dependencies(module_names=["jig"]) == []
+        assert code.build_import_dependency() == SourceCodeImportDependency(
+            source_module_path=ModulePath.from_str("main"),
+            import_paths=ImportPathCollection(
+                [ImportPath.from_str("os.path"), ImportPath.from_str("os.environ")]
+            ),
+        )

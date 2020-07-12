@@ -31,3 +31,32 @@ from typing import Optional
         assert nodes[0].module == "typing"
         assert nodes[0].names[0].name == "Optional"
         assert nodes[0].level == 0
+
+    def test_many_import_from(self):
+        source = """
+from typing import Optional, List
+        """
+
+        nodes = JigAST.parse(source).import_froms()
+
+        assert len(nodes) == 1
+        assert isinstance(nodes[0], ImportFrom)
+        assert len(nodes[0].names) == 2
+        assert nodes[0].module == "typing"
+        assert nodes[0].names[0].name == "Optional"
+        assert nodes[0].names[1].name == "List"
+        assert nodes[0].level == 0
+
+    def test_any_import_from(self):
+        source = """
+from typing import *
+        """
+
+        nodes = JigAST.parse(source).import_froms()
+
+        assert len(nodes) == 1
+        assert isinstance(nodes[0], ImportFrom)
+        assert len(nodes[0].names) == 1
+        assert nodes[0].module == "typing"
+        assert nodes[0].names[0].name == "*"
+        assert nodes[0].level == 0
