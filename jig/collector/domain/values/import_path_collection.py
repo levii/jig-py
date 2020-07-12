@@ -3,7 +3,7 @@ from typing import List
 
 from jig.collector.domain.ast import ImportFrom, Import
 from jig.collector.domain.values.import_path import ImportPath
-from jig.collector.domain.values.source_file_path import SourceFilePath
+from jig.collector.domain.source_file.source_file_path import SourceFilePath
 
 
 @dataclasses.dataclass(frozen=True)

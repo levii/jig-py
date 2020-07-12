@@ -3,10 +3,10 @@ import os
 from pathlib import Path
 from typing import List
 
-from jig.collector.domain.values.source_code_collection import SourceCodeCollection
-from jig.collector.domain.values.source_code import SourceCode
-from jig.collector.domain.values.source_file import SourceFile
-from jig.collector.domain.values.source_file_path import SourceFilePath
+from jig.collector.domain.source_code.source_code_collection import SourceCodeCollection
+from jig.collector.domain.source_code.source_code import SourceCode
+from jig.collector.domain.source_file.source_file import SourceFile
+from jig.collector.domain.source_file.source_file_path import SourceFilePath
 
 
 @dataclasses.dataclass(frozen=True)

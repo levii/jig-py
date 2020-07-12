@@ -1,7 +1,7 @@
 import dataclasses
 
 from jig.collector.domain.values.module_path import ModulePath
-from jig.collector.domain.values.source_file_path import SourceFilePath
+from jig.collector.domain.source_file.source_file_path import SourceFilePath
 
 
 @dataclasses.dataclass(frozen=True)

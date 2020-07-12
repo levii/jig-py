@@ -1,7 +1,7 @@
 import dataclasses
 from typing import List, Optional
 
-from jig.collector.domain.values.source_code import SourceCode
+from jig.collector.domain.source_code.source_code import SourceCode
 
 
 @dataclasses.dataclass(frozen=True)

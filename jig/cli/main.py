@@ -29,7 +29,7 @@ def output_dependency_images(target_path, output_dir="output"):
     :return:
     """
 
-    for depth in range(1, 6):
+    for depth in range(1, 8):
         source_codes = _collect_source_codes(target_path=target_path)
 
         analyzer = ModuleDependencyAnalyzer(source_code_list=source_codes)

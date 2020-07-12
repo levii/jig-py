@@ -5,7 +5,7 @@ from jig.collector.domain.ast import ClassDef, JigSourceCode
 from jig.collector.domain.values.import_path_collection import ImportPathCollection
 from jig.collector.domain.values.module_dependency import ModuleDependency
 from jig.collector.domain.values.module_path import ModulePath
-from jig.collector.domain.values.source_file import SourceFile
+from jig.collector.domain.source_file.source_file import SourceFile
 
 
 @dataclasses.dataclass(frozen=True)
