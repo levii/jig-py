@@ -1,5 +1,5 @@
 import dataclasses
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from jig.collector.domain.source_code.source_code_collection import SourceCodeCollection
 from jig.collector.domain.source_code.source_code_import_dependency import (
@@ -10,7 +10,7 @@ from jig.collector.domain.values.module_path import ModulePath
 
 @dataclasses.dataclass(frozen=True)
 class ImportDependencyCollection:
-    _dependencies: Dict[ModulePath, SourceCodeImportDependency]
+    _dependencies: Dict[str, SourceCodeImportDependency]
 
     @classmethod
     def build(
@@ -18,7 +18,8 @@ class ImportDependencyCollection:
     ) -> "ImportDependencyCollection":
         return cls(
             _dependencies={
-                dependency.source_module_path: dependency for dependency in dependencies
+                str(dependency.source_module_path): dependency
+                for dependency in dependencies
             }
         )
 
@@ -32,3 +33,8 @@ class ImportDependencyCollection:
                 for source_code in source_code_collection
             ]
         )
+
+    def get_by_module_path(
+        self, module_path: ModulePath
+    ) -> Optional[SourceCodeImportDependency]:
+        return self._dependencies.get(str(module_path))
