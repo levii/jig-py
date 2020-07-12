@@ -4,8 +4,8 @@ from typing import Optional, List
 
 import fire
 
-from jig.analizer.application import ModuleDependencyAnalyzer
-from jig.analizer.domain import SourceCodeList
+from jig.analyzer.application import ModuleDependencyAnalyzer
+from jig.analyzer.domain import SourceCodeList
 from jig.collector.application import SourceCodeCollector
 from jig.collector.domain.source_code.source_code import SourceCode
 from jig.visualizer.application import (

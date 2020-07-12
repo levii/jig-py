@@ -1,7 +1,7 @@
 import dataclasses
 from typing import List
 
-from jig.analizer.domain import SourceCodeList
+from jig.analyzer.domain import SourceCodeList
 from jig.collector.domain.values.module_dependency import ModuleDependency
 
 
