@@ -1,13 +1,13 @@
 from pathlib import Path
 
-from jig.collector.domain import SourceFilePath, ModulePath
+from jig.collector.domain import SourceFilePath, ImportPath
 from jig.collector.domain import ImportModule, ImportPathCollection
 from .helper import parse_import_from, parse_import
 
 
 def mod_collections(*modules) -> ImportPathCollection:
     return ImportPathCollection(
-        [ImportModule(module_path=ModulePath.from_str(module)) for module in modules]
+        [ImportModule(import_path=ImportPath.from_str(module)) for module in modules]
     )
 
 
@@ -76,7 +76,7 @@ class TestImportModuleCollectionBuildByImportFromAST:
 
         assert len(import_modules) == 1
         assert (
-            ImportModule(ModulePath.from_str("jig.collector.jig_ast")) in import_modules
+            ImportModule(ImportPath.from_str("jig.collector.jig_ast")) in import_modules
         )
 
     def test_import_from_parent_path_with_module_name(self):
@@ -116,12 +116,3 @@ class TestImportModuleCollectionBuildByImportAST:
 
         import_modules = ImportPathCollection.build_by_import_ast(import_ast)
         assert import_modules == mod_collections("os", "datetime.datetime")
-
-    def test_to_module_path_list(self):
-        import_ast = parse_import("import os, datetime.datetime")
-
-        import_modules = ImportPathCollection.build_by_import_ast(import_ast)
-        assert import_modules.to_module_path_list() == [
-            ModulePath.from_str("os"),
-            ModulePath.from_str("datetime.datetime"),
-        ]

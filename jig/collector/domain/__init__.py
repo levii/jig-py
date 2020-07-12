@@ -5,6 +5,7 @@ from typing import List, Optional
 
 from jig.collector.domain.ast import ClassDef, JigSourceCode
 from jig.collector.domain.ast import Import, ImportFrom
+from jig.collector.domain.values.import_path import ImportPath
 
 
 @dataclasses.dataclass(frozen=True)
@@ -109,7 +110,7 @@ class SourceFilePath:
 
         return ModulePath(names=names)
 
-    def import_from_to_module_paths(self, import_from: ImportFrom) -> List[ModulePath]:
+    def import_from_to_import_paths(self, import_from: ImportFrom) -> List[ImportPath]:
         """
         このソースファイルパスを基準にimport from を解決し、ModulePathのリストを返します。
         :param import_from:
@@ -120,13 +121,14 @@ class SourceFilePath:
         if level < 1:
             assert import_from.module is not None
 
-            p = ModulePath.from_str(import_from.module)
+            p = ImportPath.from_str(import_from.module)
             return [p.join(alias.name) for alias in import_from.names]
 
-        p = self.module_path_with_level(level)
+        module_path = self.module_path_with_level(level)
+        p = ImportPath.from_str(str(module_path))
 
         if import_from.module:
-            p += ModulePath.from_str(import_from.module)
+            p += ImportPath.from_str(import_from.module)
 
         return [p.join(alias.name) for alias in import_from.names]
 
@@ -145,7 +147,7 @@ class SourceFilePath:
 
 @dataclasses.dataclass(frozen=True)
 class ImportModule:
-    module_path: ModulePath
+    import_path: ImportPath
 
 
 @dataclasses.dataclass(frozen=True)
@@ -167,7 +169,7 @@ class ImportPathCollection:
     @classmethod
     def build_by_import_ast(cls, import_ast: Import) -> "ImportPathCollection":
         imports = [
-            ImportModule(module_path=ModulePath.from_str(name.name))
+            ImportModule(import_path=ImportPath.from_str(name.name))
             for name in import_ast.names
         ]
 
@@ -178,13 +180,10 @@ class ImportPathCollection:
         cls, file_path: SourceFilePath, import_from: ImportFrom
     ) -> "ImportPathCollection":
 
-        imports = file_path.import_from_to_module_paths(import_from)
+        imports = file_path.import_from_to_import_paths(import_from)
         return cls(
-            _paths=[ImportModule(module_path=module_path) for module_path in imports]
+            _paths=[ImportModule(import_path=module_path) for module_path in imports]
         )
-
-    def to_module_path_list(self) -> List[ModulePath]:
-        return [module.module_path for module in self._paths]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -235,15 +234,21 @@ class SourceCode:
     ) -> List[ModuleDependency]:
         if not module_names:
             return [
-                ModuleDependency(src=self.module_path, dest=module.module_path)
+                ModuleDependency(
+                    src=self.module_path,
+                    dest=ModulePath.from_str(str(module.import_path)),
+                )
                 for module in self.import_paths
             ]
 
         dependencies = []
         for module in self.import_paths:
-            if module.module_path.match_module_names(module_names):
+            if module.import_path.match_module_names(module_names):
                 dependencies.append(
-                    ModuleDependency(src=self.module_path, dest=module.module_path)
+                    ModuleDependency(
+                        src=self.module_path,
+                        dest=ModulePath.from_str(str(module.import_path)),
+                    )
                 )
 
         return dependencies

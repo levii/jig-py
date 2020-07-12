@@ -1,11 +1,15 @@
 from pathlib import Path
 
-from jig.collector.domain import ModulePath, SourceFilePath
+from jig.collector.domain import ModulePath, SourceFilePath, ImportPath
 from tests.collector.domain.helper import parse_import_from
 
 
 def mod(path: str) -> ModulePath:
     return ModulePath.from_str(path)
+
+
+def import_path(path: str) -> ImportPath:
+    return ImportPath.from_str(path)
 
 
 class TestSourceFilePath:
@@ -53,81 +57,81 @@ class TestSourceFilePathResolveImportFrom:
     def test_builtin_module(self):
         import_from = parse_import_from("from os import path")
 
-        assert self.package_file_path.import_from_to_module_paths(import_from) == [
-            mod("os.path")
+        assert self.package_file_path.import_from_to_import_paths(import_from) == [
+            import_path("os.path")
         ]
-        assert self.module_file_path.import_from_to_module_paths(import_from) == [
-            mod("os.path")
+        assert self.module_file_path.import_from_to_import_paths(import_from) == [
+            import_path("os.path")
         ]
 
     def test_multiple_import_names(self):
         import_from = parse_import_from("from datetime import datetime, timezone")
 
         expected = [
-            mod("datetime.datetime"),
-            mod("datetime.timezone"),
+            import_path("datetime.datetime"),
+            import_path("datetime.timezone"),
         ]
 
         assert (
-            self.package_file_path.import_from_to_module_paths(import_from) == expected
+            self.package_file_path.import_from_to_import_paths(import_from) == expected
         )
         assert (
-            self.module_file_path.import_from_to_module_paths(import_from) == expected
+            self.module_file_path.import_from_to_import_paths(import_from) == expected
         )
 
     def test_nested_module(self):
         import_from = parse_import_from("from os.path import basename")
 
-        assert self.package_file_path.import_from_to_module_paths(import_from) == [
-            mod("os.path.basename")
+        assert self.package_file_path.import_from_to_import_paths(import_from) == [
+            import_path("os.path.basename")
         ]
 
     def test_external_module(self):
         import_from = parse_import_from("from typed_ast import ast3 as ast")
 
-        assert self.package_file_path.import_from_to_module_paths(import_from) == [
-            mod("typed_ast.ast3")
+        assert self.package_file_path.import_from_to_import_paths(import_from) == [
+            import_path("typed_ast.ast3")
         ]
-        assert self.module_file_path.import_from_to_module_paths(import_from) == [
-            mod("typed_ast.ast3")
+        assert self.module_file_path.import_from_to_import_paths(import_from) == [
+            import_path("typed_ast.ast3")
         ]
 
     def test_import_from_current_path(self):
         import_from = parse_import_from("from . import sibling")
 
-        assert self.package_file_path.import_from_to_module_paths(import_from) == [
-            mod("jig.collector.domain.sibling")
+        assert self.package_file_path.import_from_to_import_paths(import_from) == [
+            import_path("jig.collector.domain.sibling")
         ]
-        assert self.module_file_path.import_from_to_module_paths(import_from) == [
-            mod("jig.collector.sibling")
+        assert self.module_file_path.import_from_to_import_paths(import_from) == [
+            import_path("jig.collector.sibling")
         ]
 
     def test_import_from_current_path_with_module_name(self):
         import_from = parse_import_from("from .sibling import submodule")
 
-        assert self.package_file_path.import_from_to_module_paths(import_from) == [
-            mod("jig.collector.domain.sibling.submodule")
+        assert self.package_file_path.import_from_to_import_paths(import_from) == [
+            import_path("jig.collector.domain.sibling.submodule")
         ]
-        assert self.module_file_path.import_from_to_module_paths(import_from) == [
-            mod("jig.collector.sibling.submodule")
+        assert self.module_file_path.import_from_to_import_paths(import_from) == [
+            import_path("jig.collector.sibling.submodule")
         ]
 
     def test_import_from_parent_path(self):
         import_from = parse_import_from("from .. import jig_ast")
 
-        assert self.package_file_path.import_from_to_module_paths(import_from) == [
-            mod("jig.collector.jig_ast")
+        assert self.package_file_path.import_from_to_import_paths(import_from) == [
+            import_path("jig.collector.jig_ast")
         ]
-        assert self.module_file_path.import_from_to_module_paths(import_from) == [
-            mod("jig.jig_ast")
+        assert self.module_file_path.import_from_to_import_paths(import_from) == [
+            import_path("jig.jig_ast")
         ]
 
     def test_import_from_parent_path_with_module_name(self):
         import_from = parse_import_from("from ..jig_ast import submodule")
 
-        assert self.package_file_path.import_from_to_module_paths(import_from) == [
-            mod("jig.collector.jig_ast.submodule")
+        assert self.package_file_path.import_from_to_import_paths(import_from) == [
+            import_path("jig.collector.jig_ast.submodule")
         ]
-        assert self.module_file_path.import_from_to_module_paths(import_from) == [
-            mod("jig.jig_ast.submodule")
+        assert self.module_file_path.import_from_to_import_paths(import_from) == [
+            import_path("jig.jig_ast.submodule")
         ]

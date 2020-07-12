@@ -3,15 +3,15 @@ from pathlib import Path
 from jig.collector.domain import (
     SourceFile,
     SourceFilePath,
-    ModulePath,
     ImportModule,
     ImportPathCollection,
     SourceCode,
+    ImportPath,
 )
 
 
 def collection(*args):
-    modules = [ImportModule(ModulePath.from_str(p)) for p in args]
+    modules = [ImportModule(ImportPath.from_str(p)) for p in args]
 
     return ImportPathCollection(modules)
 
