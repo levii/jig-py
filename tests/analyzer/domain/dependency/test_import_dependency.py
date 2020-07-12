@@ -1,5 +1,6 @@
 from typing import List
 
+from jig.analyzer.domain import ModuleDependency
 from jig.analyzer.domain.dependency.import_dependency import ImportDependencyCollection
 from jig.collector.domain.source_code.source_code_import_dependency import (
     SourceCodeImportDependency,
@@ -50,3 +51,22 @@ class TestImportDependencyCollection:
         assert collection.detect_module_path(
             import_path=ImportPath.from_str("bar.XXX")
         ) == ModulePath.from_str("bar")
+
+    def test_build_module_dependencies(self):
+        collection = ImportDependencyCollection.build(
+            dependencies=[
+                build_dep(
+                    src_module_path="main",
+                    import_paths=["foo", "bar.BazClass", "typing.List"],
+                ),
+                build_dep(src_module_path="foo", import_paths=["bar", "os.path"]),
+                build_dep(src_module_path="bar", import_paths=[]),
+            ]
+        )
+
+        dependencies = collection.build_module_dependencies()
+        assert dependencies == [
+            ModuleDependency.from_str("main", "foo"),
+            ModuleDependency.from_str("main", "bar"),
+            ModuleDependency.from_str("foo", "bar"),
+        ]
