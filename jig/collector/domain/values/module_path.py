@@ -10,7 +10,7 @@ class ModulePath:
         if any([name.find(".") >= 0 for name in self.names]):
             raise ValueError(f"An invalid name specified in `{self.names}`")
         if not self.names:
-            raise ValueError(f"names must have least one element.")
+            raise ValueError("names must have least one element.")
 
     @classmethod
     def build(cls, names: List[str]) -> "ModulePath":
