@@ -8,7 +8,7 @@ from jig.collector.domain.values.import_path_collection import ImportPathCollect
 from jig.collector.domain.values.module_path import ModulePath
 from jig.collector.domain.source_code.source_code import SourceCode
 from jig.collector.domain.source_code.source_code_collection import SourceCodeCollection
-from jig.collector.domain.values.module_dependency import ModuleDependency
+from jig.analyzer.domain.dependency.module_dependency import ModuleDependency
 from jig.collector.domain.source_file.source_file import SourceFile
 from jig.collector.domain.source_file.source_file_path import SourceFilePath
 

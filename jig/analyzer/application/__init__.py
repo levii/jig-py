@@ -2,7 +2,7 @@ import dataclasses
 from typing import List
 
 from jig.analyzer.domain import SourceCodeList
-from jig.collector.domain.values.module_dependency import ModuleDependency
+from jig.analyzer.domain.dependency.module_dependency import ModuleDependency
 
 
 @dataclasses.dataclass(frozen=True)
