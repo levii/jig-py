@@ -30,3 +30,23 @@ class TestImportDependencyCollection:
             collection.get_by_module_path(ModulePath.from_str("main")),
             SourceCodeImportDependency,
         )
+
+    def test_detect_module_path(self):
+        collection = ImportDependencyCollection.build(
+            dependencies=[
+                build_dep(src_module_path="main", import_paths=["foo", "bar.BazClass"]),
+                build_dep(src_module_path="foo", import_paths=[]),
+                build_dep(src_module_path="bar", import_paths=[]),
+            ]
+        )
+
+        assert (
+            collection.detect_module_path(import_path=ImportPath.from_str("os.path"))
+            is None
+        )
+        assert collection.detect_module_path(
+            import_path=ImportPath.from_str("foo")
+        ) == ModulePath.from_str("foo")
+        assert collection.detect_module_path(
+            import_path=ImportPath.from_str("bar.XXX")
+        ) == ModulePath.from_str("bar")
