@@ -3,7 +3,8 @@ import subprocess
 import textwrap
 from typing import List
 
-from jig.collector.domain import SourceCode, ModuleDependency
+from jig.collector.domain.values.source_code import SourceCode
+from jig.collector.domain.values.module_dependency import ModuleDependency
 
 
 class DependencyTextVisualizer:

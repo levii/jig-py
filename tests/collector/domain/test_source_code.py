@@ -1,13 +1,11 @@
 from pathlib import Path
 
-from jig.collector.domain import (
-    SourceCode,
-    SourceFile,
-    SourceCodeCollection,
-    SourceFilePath,
-    ModuleDependency,
-    ModulePath,
-)
+from jig.collector.domain.values.module_path import ModulePath
+from jig.collector.domain.values.source_code import SourceCode
+from jig.collector.domain.values.source_code_collection import SourceCodeCollection
+from jig.collector.domain.values.module_dependency import ModuleDependency
+from jig.collector.domain.values.source_file import SourceFile
+from jig.collector.domain.values.source_file_path import SourceFilePath
 
 
 class TestSourceCode:

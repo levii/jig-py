@@ -1,12 +1,10 @@
 from pathlib import Path
 
-from jig.collector.domain import (
-    SourceFile,
-    SourceFilePath,
-    ImportPathCollection,
-    SourceCode,
-    ImportPath,
-)
+from jig.collector.domain.values.import_path import ImportPath
+from jig.collector.domain.values.import_path_collection import ImportPathCollection
+from jig.collector.domain.values.source_code import SourceCode
+from jig.collector.domain.values.source_file import SourceFile
+from jig.collector.domain.values.source_file_path import SourceFilePath
 
 
 def collection(*args):

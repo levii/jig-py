@@ -1,4 +1,4 @@
-from jig.collector.domain import ModulePath
+from jig.collector.domain.values.module_path import ModulePath
 
 
 def mod(path: str) -> ModulePath:

@@ -1,7 +1,9 @@
 import dataclasses
 from typing import List
 
-from jig.collector.domain import ModulePath, SourceCode, ModuleDependency
+from jig.collector.domain.values.module_dependency import ModuleDependency
+from jig.collector.domain.values.source_code import SourceCode
+from jig.collector.domain.values.module_path import ModulePath
 
 
 @dataclasses.dataclass

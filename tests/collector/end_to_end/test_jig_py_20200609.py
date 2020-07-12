@@ -6,11 +6,9 @@ from pathlib import Path
 from typing import Optional
 
 from jig.collector.application import SourceCodeCollector
-from jig.collector.domain import (
-    ModulePath,
-    ImportPathCollection,
-    ImportPath,
-)
+from jig.collector.domain.values.import_path import ImportPath
+from jig.collector.domain.values.import_path_collection import ImportPathCollection
+from jig.collector.domain.values.module_path import ModulePath
 
 
 class TestJigPy20200609:

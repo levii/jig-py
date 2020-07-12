@@ -7,7 +7,7 @@ import fire
 from jig.analizer.application import ModuleDependencyAnalyzer
 from jig.analizer.domain import SourceCodeList
 from jig.collector.application import SourceCodeCollector
-from jig.collector.domain import SourceCode
+from jig.collector.domain.values.source_code import SourceCode
 from jig.visualizer.application import (
     DependencyTextVisualizer,
     DotTextVisualizer,

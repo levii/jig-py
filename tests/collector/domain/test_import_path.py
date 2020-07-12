@@ -1,4 +1,4 @@
-from jig.collector.domain import ImportPath
+from jig.collector.domain.values.import_path import ImportPath
 
 
 def path(path: str) -> ImportPath:

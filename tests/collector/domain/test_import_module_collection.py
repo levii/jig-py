@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from jig.collector.domain import SourceFilePath, ImportPath
-from jig.collector.domain import ImportPathCollection
+from jig.collector.domain.values.import_path import ImportPath
+from jig.collector.domain.values.import_path_collection import ImportPathCollection
+from jig.collector.domain.values.source_file_path import SourceFilePath
 from .helper import parse_import_from, parse_import
 
 
