@@ -3,21 +3,18 @@ from pathlib import Path
 
 import fire
 
-from jig.analyzer.application import ModuleDependencyAnalyzer
-from jig.analyzer.domain import SourceCodeList
+from jig.analyzer.domain.dependency.import_dependency import ImportDependencyCollection
 from jig.collector.application import SourceCodeCollector
+from jig.collector.domain.source_code.source_code_collection import SourceCodeCollection
 from jig.visualizer.application import ModuleDependencyVisualizer
 
 
-def _collect_source_codes(target_path: str) -> SourceCodeList:
+def _collect_source_codes(target_path: str) -> SourceCodeCollection:
     root_path = os.getcwd()
 
-    source_code_list = list(
-        SourceCodeCollector(root_path=Path(root_path)).collect(
-            target_path=Path(target_path)
-        )
+    return SourceCodeCollector(root_path=Path(root_path)).collect(
+        target_path=Path(target_path)
     )
-    return SourceCodeList(_source_codes=source_code_list)
 
 
 def output_dependency_images(target_path, output_dir="output"):
@@ -32,8 +29,10 @@ def output_dependency_images(target_path, output_dir="output"):
     for depth in range(1, 8):
         source_codes = _collect_source_codes(target_path=target_path)
 
-        analyzer = ModuleDependencyAnalyzer(source_code_list=source_codes)
-        dependencies = analyzer.analyze()
+        collection = ImportDependencyCollection.build_from_source_code_collection(
+            source_codes
+        )
+        dependencies = collection.build_module_dependencies()
 
         visualizer = ModuleDependencyVisualizer(dependencies=dependencies)
         visualizer.visualize(depth=depth, output_dir=output_dir)

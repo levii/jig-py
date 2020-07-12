@@ -4,10 +4,10 @@ from typing import Optional, List
 
 import fire
 
-from jig.analyzer.application import ModuleDependencyAnalyzer
-from jig.analyzer.domain import SourceCodeList
+from jig.analyzer.domain.dependency.import_dependency import ImportDependencyCollection
 from jig.collector.application import SourceCodeCollector
 from jig.collector.domain.source_code.source_code import SourceCode
+from jig.collector.domain.source_code.source_code_collection import SourceCodeCollection
 from jig.visualizer.application import (
     DependencyTextVisualizer,
     DotTextVisualizer,
@@ -48,14 +48,16 @@ class Main:
                 print(str(source_code.module_path), str(import_module.module_path))
 
     def module_deps(self, target_path: str, root_path: Optional[str] = None) -> None:
-        source_codes = self._collect_source_codes(
-            target_path=target_path, root_path=root_path
-        )
-        analyzer = ModuleDependencyAnalyzer(
-            source_code_list=SourceCodeList(_source_codes=source_codes)
+        source_codes = SourceCodeCollection(
+            self._collect_source_codes(target_path=target_path, root_path=root_path)
         )
 
-        for dependency in analyzer.analyze():
+        collection = ImportDependencyCollection.build_from_source_code_collection(
+            source_codes
+        )
+        dependencies = collection.build_module_dependencies()
+
+        for dependency in dependencies:
             print(str(dependency.src), str(dependency.dest))
 
     def source_codes(self, target_path: str, root_path: Optional[str] = None) -> None:
