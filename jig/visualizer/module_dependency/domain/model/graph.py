@@ -27,8 +27,8 @@ class Graph:
         self.add_node(edge.head)
 
     def add_cluster(self, cluster: Cluster):
-        if cluster.node in self.clusters:
-            raise ValueError(f"{cluster.node.name} がすでに存在します。")
+        # if cluster.node in self.clusters:
+        #     raise ValueError(f"{cluster.node.name} がすでに存在します。")
 
         not_included = cluster.children - self.nodes
         if not_included:
@@ -64,8 +64,8 @@ class Graph:
 
         self._dig_successors(node)
         self._dig_predecessors(node)
-        self._dig_clustering(node)
         self._dig_inner_edge(node)
+        self._dig_clustering(node)
 
         self.remove_node(node)
 
