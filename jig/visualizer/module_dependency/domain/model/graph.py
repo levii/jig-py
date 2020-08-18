@@ -1,6 +1,7 @@
 import dataclasses
 from typing import Set, List, Dict
 
+from jig.visualizer.module_dependency.domain.model.master_graph import MasterGraph
 from jig.visualizer.module_dependency.domain.value.cluster import Cluster
 from jig.visualizer.module_dependency.domain.value.module_edge import ModuleEdge
 from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
@@ -8,6 +9,7 @@ from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
 
 @dataclasses.dataclass
 class Graph:
+    master_graph: MasterGraph = dataclasses.field(default_factory=MasterGraph)
     nodes: Set[ModuleNode] = dataclasses.field(default_factory=set)
     edges: Set[ModuleEdge] = dataclasses.field(default_factory=set)
     clusters: Dict[ModuleNode, Cluster] = dataclasses.field(default_factory=dict)
