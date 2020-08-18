@@ -48,6 +48,7 @@ class TestGraph:
 
     def test_add_cluster(self):
         g = Graph()
+        g.add_edge(edge("A", "B"))
         g.add_cluster(cluster("pkg", {"A", "B"}))
 
         assert len(g.clusters) == 1
@@ -71,6 +72,7 @@ class TestGraph:
 
     def test_remove_node_from_cluster(self):
         g = Graph()
+        g.add_edge(edge("A", "B"))
         g.add_cluster(cluster("pkg", {"A"}))
         assert len(g.clusters) == 1
 
