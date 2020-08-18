@@ -1,4 +1,5 @@
 import dataclasses
+from typing import Optional, List
 
 from .module_node import ModuleNode
 
@@ -30,3 +31,17 @@ class ModuleEdge:
             return self.tail < other.tail
 
         return self.head < other.head
+
+
+@dataclasses.dataclass(frozen=True)
+class ModuleEdgeCollection:
+    _edges: List[ModuleEdge] = dataclasses.field(default_factory=list)
+
+    def find_parent_edge(self, edge: ModuleEdge) -> Optional[ModuleEdge]:
+        for e in self._edges:
+            if edge.belongs_to(e):
+                return e
+        return None
+
+    def __iter__(self):
+        return iter(self._edges)
