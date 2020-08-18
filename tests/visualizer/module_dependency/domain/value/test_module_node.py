@@ -1,4 +1,4 @@
-from jig.visualizer.module_dependency.domain.fundamental.module_node import ModuleNode
+from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
 
 
 def node(name: str) -> ModuleNode:

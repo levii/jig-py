@@ -1,4 +1,4 @@
-from jig.visualizer.module_dependency.domain.fundamental.module_path import ModulePath
+from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
 
 
 def module_path(name: str) -> ModulePath:
