@@ -7,6 +7,7 @@ description = "Jig for Python"
 dependencies = [
     "fire",
     "typed_ast",
+    "graphviz",
 ]
 
 with open("README.md", "r") as fh:
