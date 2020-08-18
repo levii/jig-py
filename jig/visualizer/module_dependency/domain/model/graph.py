@@ -3,7 +3,10 @@ from typing import Set, List, Dict
 
 from jig.visualizer.module_dependency.domain.model.master_graph import MasterGraph
 from jig.visualizer.module_dependency.domain.value.cluster import Cluster
-from jig.visualizer.module_dependency.domain.value.module_edge import ModuleEdge
+from jig.visualizer.module_dependency.domain.value.module_edge import (
+    ModuleEdge,
+    ModuleEdgeCollection,
+)
 from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
 
 
@@ -56,3 +59,51 @@ class Graph:
 
     def predecessors(self, node: ModuleNode) -> List[ModuleNode]:
         return [e.tail for e in self.edges if e.head == node]
+
+    def dig(self, node: ModuleNode):
+
+        self._dig_successors(node)
+        self._dig_predecessors(node)
+        self._dig_clustering(node)
+        self._dig_inner_edge(node)
+
+        self.remove_node(node)
+
+    def _dig_inner_edge(self, node: ModuleNode):
+        for edge in self.master_graph.find_edges(node):
+            self.add_edge(edge)
+
+    def _dig_clustering(self, node: ModuleNode):
+        cluster = Cluster(node=node)
+        for n in self.master_graph.find_nodes(node):
+            cluster.add(n)
+
+        self.add_cluster(cluster)
+
+    def _dig_successors(self, node: ModuleNode):
+        # 現在のnodeからの接続先エッジを取得
+        current_edges = ModuleEdgeCollection(
+            [ModuleEdge(node, s) for s in self.successors(node)]
+        )
+
+        for new_edge in self.master_graph:
+            parent_edge = current_edges.find_parent_edge(new_edge)
+
+            if parent_edge:
+                # ノード分解した新しいノードから、ノード分解していないノードへつなぐ
+                edge = ModuleEdge(new_edge.tail, parent_edge.head)
+                self.add_edge(edge)
+
+    def _dig_predecessors(self, node: ModuleNode):
+        # 現在のnodeからの接続元エッジを取得
+        current_edges = ModuleEdgeCollection(
+            [ModuleEdge(p, node) for p in self.predecessors(node)]
+        )
+
+        for new_edge in self.master_graph:
+            parent_edge = current_edges.find_parent_edge(new_edge)
+
+            if parent_edge:
+                # ノード分解した新しいノードから、ノード分解していないノードへつなぐ
+                edge = ModuleEdge(parent_edge.tail, new_edge.head)
+                self.add_edge(edge)

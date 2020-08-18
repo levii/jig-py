@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from .module_node import ModuleNode
 
@@ -36,6 +36,10 @@ class ModuleEdge:
 @dataclasses.dataclass(frozen=True)
 class ModuleEdgeCollection:
     _edges: List[ModuleEdge] = dataclasses.field(default_factory=list)
+
+    @classmethod
+    def from_tuple_list(cls, edges: List[Tuple[str, str]]) -> "ModuleEdgeCollection":
+        return cls([ModuleEdge.from_str(tail=e[0], head=e[1]) for e in edges])
 
     def find_parent_edge(self, edge: ModuleEdge) -> Optional[ModuleEdge]:
         for e in self._edges:

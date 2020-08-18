@@ -3,6 +3,7 @@ from typing import Set
 import pytest
 
 from jig.visualizer.module_dependency.domain.model.graph import Graph
+from jig.visualizer.module_dependency.domain.model.master_graph import MasterGraph
 from jig.visualizer.module_dependency.domain.value.cluster import Cluster
 from jig.visualizer.module_dependency.domain.value.module_edge import ModuleEdge
 from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
@@ -94,3 +95,51 @@ class TestGraph:
         assert g.predecessors(node("A")) == []
         assert g.predecessors(node("B")) == [node("A")]
         assert g.predecessors(node("C")) == []
+
+    def test_dig(self):
+        master_graph = MasterGraph.from_tuple_list(
+            [
+                ("jig.collector.application", "jig.collector.domain.source_code"),
+                ("jig.collector.application", "jig.collector.domain.source_file"),
+                (
+                    "jig.collector.domain.source_code",
+                    "jig.collector.domain.source_file",
+                ),
+            ]
+        )
+        g = Graph(master_graph=master_graph)
+        g.add_edge(edge("jig.collector.application", "jig.collector.domain"))
+
+        assert len(g.nodes) == 2
+        assert len(g.edges) == 1
+        assert len(g.clusters) == 0
+        assert set([n.name for n in g.nodes]) == {
+            "jig.collector.application",
+            "jig.collector.domain",
+        }
+        assert set([(e.tail.name, e.head.name) for e in g.edges]) == {
+            ("jig.collector.application", "jig.collector.domain"),
+        }
+
+        g.dig(node("jig.collector.domain"))
+
+        assert len(g.nodes) == 3
+        assert len(g.edges) == 3
+        assert len(g.clusters) == 1
+
+        assert set([n.name for n in g.nodes]) == {
+            "jig.collector.application",
+            "jig.collector.domain.source_code",
+            "jig.collector.domain.source_file",
+        }
+        assert set([(e.tail.name, e.head.name) for e in g.edges]) == {
+            ("jig.collector.application", "jig.collector.domain.source_code"),
+            ("jig.collector.application", "jig.collector.domain.source_file"),
+            ("jig.collector.domain.source_code", "jig.collector.domain.source_file"),
+        }
+        domain_cluster = g.clusters[node("jig.collector.domain")]
+        assert domain_cluster.node == node("jig.collector.domain")
+        assert set([n.name for n in domain_cluster.children]) == {
+            "jig.collector.domain.source_code",
+            "jig.collector.domain.source_file",
+        }
