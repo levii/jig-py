@@ -2,11 +2,12 @@ import setuptools
 
 
 name = "jig-py"
-version = "0.0.4"
+version = "0.0.5"
 description = "Jig for Python"
 dependencies = [
     "fire",
     "typed_ast",
+    "graphviz",
 ]
 
 with open("README.md", "r") as fh:
