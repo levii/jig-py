@@ -27,9 +27,6 @@ class Graph:
         self.add_node(edge.head)
 
     def add_cluster(self, cluster: Cluster):
-        # if cluster.node in self.clusters:
-        #     raise ValueError(f"{cluster.node.name} がすでに存在します。")
-
         not_included = cluster.children - self.nodes
         if not_included:
             raise ValueError(f"Graphのnodesに含まれないchildrenがあります: {not_included}")

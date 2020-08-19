@@ -55,10 +55,7 @@ class TestGraph:
         assert len(g.clusters) == 1
 
         with pytest.raises(ValueError):
-            g.add_cluster(cluster("pkg", {"A", "B"}))
-
-        with pytest.raises(ValueError):
-            g.add_cluster(cluster("pkg", {"A"}))
+            g.add_cluster(cluster("pkg", {"C"}))
 
     def test_remove_node(self):
         g = Graph()
