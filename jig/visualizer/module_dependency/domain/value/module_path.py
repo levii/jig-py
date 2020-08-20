@@ -1,4 +1,5 @@
 import dataclasses
+from typing import List
 
 
 @dataclasses.dataclass(frozen=True)
@@ -11,13 +12,20 @@ class ModulePath:
 
     @property
     def path_level(self) -> int:
-        return len(self.name.split("."))
+        return len(self.parts)
+
+    @property
+    def parts(self) -> List[str]:
+        return self.name.split(".")
 
     def __lt__(self, other: "ModulePath"):
         return self.name < other.name
 
     def belongs_to(self, other: "ModulePath") -> bool:
-        return self.name.startswith(other.name)
+        if self.path_level < other.path_level:
+            return False
+
+        return all(map(lambda pair: pair[0] == pair[1], zip(self.parts, other.parts)))
 
     def limit_path_level(self, max_path_level: int) -> "ModulePath":
         assert max_path_level > 0
