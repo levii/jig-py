@@ -27,6 +27,11 @@ class TestModuleEdge:
         assert e.belongs_to(edge("a.b.c", "x.y.z")) is False
         assert e.belongs_to(edge("a.b.c", "x")) is False
 
+    def test_is_self_loop(self):
+        assert edge("jig", "jig").is_self_loop() is True
+        assert edge("jig.cli", "jig.cli").is_self_loop() is True
+        assert edge("jig", "jig.cli").is_self_loop() is False
+
 
 class TestModuleEdgeCollection:
     def test_find_parent_edge(self):

@@ -21,6 +21,9 @@ class Graph:
         self.nodes.add(node)
 
     def add_edge(self, edge: ModuleEdge):
+        if edge.is_self_loop():
+            return
+
         self.edges.add(edge)
 
         self.add_node(edge.tail)
