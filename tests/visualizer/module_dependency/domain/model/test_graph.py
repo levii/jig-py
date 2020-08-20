@@ -105,11 +105,18 @@ class TestGraph:
             ]
         )
         g = Graph(master_graph=master_graph)
-        g.add_edge(edge("jig.collector.application", "jig.collector.domain"))
+        g.add_node(node("jig.collector"))
+
+        assert len(g.nodes) == 1
+        assert len(g.edges) == 0
+        assert len(g.clusters) == 0
+        assert set([n.name for n in g.nodes]) == {"jig.collector"}
+
+        g.dig(node("jig.collector"))
 
         assert len(g.nodes) == 2
         assert len(g.edges) == 1
-        assert len(g.clusters) == 0
+        assert len(g.clusters) == 1
         assert set([n.name for n in g.nodes]) == {
             "jig.collector.application",
             "jig.collector.domain",
@@ -122,7 +129,7 @@ class TestGraph:
 
         assert len(g.nodes) == 3
         assert len(g.edges) == 3
-        assert len(g.clusters) == 1
+        assert len(g.clusters) == 2
 
         assert set([n.name for n in g.nodes]) == {
             "jig.collector.application",

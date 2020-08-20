@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Iterator
 
 from jig.visualizer.module_dependency.domain.value.module_edge import (
     ModuleEdge,
@@ -41,5 +41,5 @@ class MasterGraph:
 
         return result
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[ModuleEdge]:
         return iter(self.edges)
