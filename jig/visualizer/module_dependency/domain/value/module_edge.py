@@ -19,6 +19,9 @@ class ModuleEdge:
     def has_node(self, node: ModuleNode) -> bool:
         return node == self.tail or node == self.head
 
+    def is_self_loop(self) -> bool:
+        return self.tail == self.head
+
     def limit_path_level(self, max_path_level: int) -> "ModuleEdge":
         assert max_path_level > 0
 
