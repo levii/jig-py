@@ -1,13 +1,29 @@
 import dataclasses
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 
+from .color import Color
 from .module_node import ModuleNode
+
+
+@dataclasses.dataclass(frozen=True)
+class ModuleEdgeStyle:
+    color: Color = dataclasses.field(default=Color.Black)
+    fontcolor: Color = dataclasses.field(default=Color.Black)
+    labelfontcolor: Color = dataclasses.field(default=Color.Black)
+
+    def to_dict(self) -> Dict[str, str]:
+        return {
+            "color": self.color.value,
+            "fontcolor": self.fontcolor.value,
+            "labelfontcolor": self.labelfontcolor.value,
+        }
 
 
 @dataclasses.dataclass(frozen=True)
 class ModuleEdge:
     tail: ModuleNode
     head: ModuleNode
+    style: ModuleEdgeStyle = dataclasses.field(default_factory=ModuleEdgeStyle)
 
     @classmethod
     def from_str(cls, tail: str, head: str) -> "ModuleEdge":

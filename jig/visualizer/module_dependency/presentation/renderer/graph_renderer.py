@@ -17,7 +17,7 @@ class GraphRenderer:
             d.node(name=node.path.name, **node.style.to_dict())
 
         for edge in sorted(self.graph.edges):
-            d.edge(edge.tail.name, edge.head.name)
+            d.edge(edge.tail.name, edge.head.name, **edge.style.to_dict())
 
         for cluster in self.graph.clusters.values():
             cluster_renderer = ClusterRenderer(cluster)
