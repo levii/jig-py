@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Dict
+from typing import Dict, Optional
 
 from .color import Color
 from .module_path import ModulePath
@@ -18,6 +18,12 @@ class ModuleNodeStyle:
             "fillcolor": self.fillcolor.value,
         }
 
+    @classmethod
+    def darkgray(cls) -> "ModuleNodeStyle":
+        return cls(
+            color=Color.Darkgray, fontcolor=Color.Darkgray, fillcolor=Color.White,
+        )
+
 
 @dataclasses.dataclass(frozen=True)
 class ModuleNode:
@@ -27,6 +33,12 @@ class ModuleNode:
     @classmethod
     def from_str(cls, path: str) -> "ModuleNode":
         return cls(path=ModulePath(name=path))
+
+    @classmethod
+    def build(
+        cls, path: ModulePath, style: Optional[ModuleNodeStyle] = None
+    ) -> "ModuleNode":
+        return cls(path=path, style=style or ModuleNodeStyle())
 
     @property
     def name(self) -> str:
@@ -47,3 +59,6 @@ class ModuleNode:
 
         new_path = self.path.limit_path_level(max_path_level)
         return ModuleNode(new_path)
+
+    def to_darkgray(self) -> "ModuleNode":
+        return self.build(path=self.path, style=ModuleNodeStyle.darkgray())

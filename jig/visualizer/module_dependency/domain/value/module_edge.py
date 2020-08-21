@@ -18,6 +18,14 @@ class ModuleEdgeStyle:
             "labelfontcolor": self.labelfontcolor.value,
         }
 
+    @classmethod
+    def darkgray(cls) -> "ModuleEdgeStyle":
+        return cls(
+            color=Color.Darkgray,
+            fontcolor=Color.Darkgray,
+            labelfontcolor=Color.Darkgray,
+        )
+
 
 @dataclasses.dataclass(frozen=True)
 class ModuleEdge:
@@ -28,6 +36,12 @@ class ModuleEdge:
     @classmethod
     def from_str(cls, tail: str, head: str) -> "ModuleEdge":
         return cls(tail=ModuleNode.from_str(tail), head=ModuleNode.from_str(head))
+
+    @classmethod
+    def build(
+        cls, tail: ModuleNode, head: ModuleNode, style: Optional[ModuleEdgeStyle] = None
+    ) -> "ModuleEdge":
+        return cls(tail=tail, head=head, style=style or ModuleEdgeStyle())
 
     def belongs_to(self, other: "ModuleEdge") -> bool:
         return self.tail.belongs_to(other.tail) and self.head.belongs_to(other.head)
@@ -50,6 +64,11 @@ class ModuleEdge:
             return self.tail < other.tail
 
         return self.head < other.head
+
+    def to_darkgray(self) -> "ModuleEdge":
+        return self.build(
+            tail=self.tail, head=self.head, style=ModuleEdgeStyle.darkgray()
+        )
 
 
 @dataclasses.dataclass(frozen=True)
