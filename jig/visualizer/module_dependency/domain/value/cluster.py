@@ -19,3 +19,8 @@ class Cluster:
     def remove(self, node: ModuleNode):
         if node in self.children:
             self.children.remove(node)
+
+    def hide_node(self, node: ModuleNode):
+        if node in self.children:
+            self.children.remove(node)
+            self.children.add(node.to_darkgray())

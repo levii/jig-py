@@ -54,6 +54,19 @@ class Graph:
             if cluster.is_empty:
                 del self.clusters[cluster.node]
 
+    def hide_node(self, node: ModuleNode):
+        if node in self.nodes:
+            self.nodes.remove(node)
+            self.nodes.add(node.to_darkgray())
+
+        edges = list(filter(lambda e: e.has_node(node), self.edges))
+        for edge in edges:
+            self.edges.remove(edge)
+            self.edges.add(edge.to_darkgray())
+
+        for cluster in self.clusters.values():
+            cluster.hide_node(node)
+
     def successors(self, node: ModuleNode) -> List[ModuleNode]:
         return [e.head for e in self.edges if e.tail == node]
 
