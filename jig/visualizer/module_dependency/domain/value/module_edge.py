@@ -1,17 +1,47 @@
 import dataclasses
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 
+from .color import Color
 from .module_node import ModuleNode
+
+
+@dataclasses.dataclass(frozen=True)
+class ModuleEdgeStyle:
+    color: Color = dataclasses.field(default=Color.Black)
+    fontcolor: Color = dataclasses.field(default=Color.Black)
+    labelfontcolor: Color = dataclasses.field(default=Color.Black)
+
+    def to_dict(self) -> Dict[str, str]:
+        return {
+            "color": self.color.value,
+            "fontcolor": self.fontcolor.value,
+            "labelfontcolor": self.labelfontcolor.value,
+        }
+
+    @classmethod
+    def darkgray(cls) -> "ModuleEdgeStyle":
+        return cls(
+            color=Color.Darkgray,
+            fontcolor=Color.Darkgray,
+            labelfontcolor=Color.Darkgray,
+        )
 
 
 @dataclasses.dataclass(frozen=True)
 class ModuleEdge:
     tail: ModuleNode
     head: ModuleNode
+    style: ModuleEdgeStyle = dataclasses.field(default_factory=ModuleEdgeStyle)
 
     @classmethod
     def from_str(cls, tail: str, head: str) -> "ModuleEdge":
         return cls(tail=ModuleNode.from_str(tail), head=ModuleNode.from_str(head))
+
+    @classmethod
+    def build(
+        cls, tail: ModuleNode, head: ModuleNode, style: Optional[ModuleEdgeStyle] = None
+    ) -> "ModuleEdge":
+        return cls(tail=tail, head=head, style=style or ModuleEdgeStyle())
 
     def belongs_to(self, other: "ModuleEdge") -> bool:
         return self.tail.belongs_to(other.tail) and self.head.belongs_to(other.head)
@@ -34,6 +64,11 @@ class ModuleEdge:
             return self.tail < other.tail
 
         return self.head < other.head
+
+    def to_darkgray(self) -> "ModuleEdge":
+        return self.build(
+            tail=self.tail, head=self.head, style=ModuleEdgeStyle.darkgray()
+        )
 
 
 @dataclasses.dataclass(frozen=True)

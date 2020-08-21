@@ -43,3 +43,7 @@ class GraphController:
     def render(self) -> Digraph:
         renderer = GraphRenderer(self.graph)
         return renderer.render()
+
+    def hide(self, node_name: str):
+        node = ModuleNode.from_str(node_name)
+        self.graph.hide_node(node)
