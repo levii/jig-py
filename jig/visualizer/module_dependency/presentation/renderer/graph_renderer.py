@@ -14,7 +14,7 @@ class GraphRenderer:
         d = Digraph()
 
         for node in sorted(self.graph.nodes):
-            d.node(name=node.path.name)
+            d.node(name=node.path.name, **node.style.to_dict())
 
         for edge in sorted(self.graph.edges):
             d.edge(edge.tail.name, edge.head.name)
