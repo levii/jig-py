@@ -92,9 +92,11 @@ class Graph:
         for cluster in self.clusters.values():
             cluster.hide_node(node)
 
-    def style(self, node: ModuleNode, color: Color, penwidth: PenWidth):
+    def style(
+        self, node: ModuleNode, color: Color, fillcolor: Color, penwidth: PenWidth
+    ):
         node_style = ModuleNodeStyle(
-            color=color, fontcolor=color, fillcolor=Color.White, penwidth=penwidth
+            color=color, fontcolor=color, fillcolor=fillcolor, penwidth=penwidth
         )
         edge_style = ModuleEdgeStyle(
             color=color, fontcolor=color, labelfontcolor=color, penwidth=penwidth
