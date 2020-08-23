@@ -95,12 +95,8 @@ class Graph:
     def style(
         self, node: ModuleNode, color: Color, fillcolor: Color, penwidth: PenWidth
     ):
-        node_style = ModuleNodeStyle(
-            color=color, fontcolor=color, fillcolor=fillcolor, penwidth=penwidth
-        )
-        edge_style = ModuleEdgeStyle(
-            color=color, fontcolor=color, labelfontcolor=color, penwidth=penwidth
-        )
+        node_style = ModuleNodeStyle(color=color, fontcolor=color, penwidth=penwidth)
+        edge_style = ModuleEdgeStyle(color=color, fontcolor=color, penwidth=penwidth)
 
         if node in self.nodes:
             self.nodes.remove(node)
