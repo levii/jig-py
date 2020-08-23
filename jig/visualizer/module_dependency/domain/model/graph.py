@@ -6,8 +6,13 @@ from jig.visualizer.module_dependency.domain.value.cluster import Cluster
 from jig.visualizer.module_dependency.domain.value.module_edge import (
     ModuleEdge,
     ModuleEdgeCollection,
+    ModuleEdgeStyle,
 )
-from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
+from jig.visualizer.module_dependency.domain.value.module_node import (
+    ModuleNode,
+    ModuleNodeStyle,
+)
+from jig.visualizer.module_dependency.domain.value.penwidth import Color, PenWidth
 
 
 @dataclasses.dataclass
@@ -75,6 +80,23 @@ class Graph:
 
         for cluster in self.clusters.values():
             cluster.hide_node(node)
+
+    def style(self, node: ModuleNode, color: Color, penwidth: PenWidth):
+        node_style = ModuleNodeStyle(
+            color=color, fontcolor=color, fillcolor=Color.White, penwidth=penwidth
+        )
+        edge_style = ModuleEdgeStyle(
+            color=color, fontcolor=color, labelfontcolor=color, penwidth=penwidth
+        )
+
+        if node in self.nodes:
+            self.nodes.remove(node)
+            self.nodes.add(node.with_style(style=node_style))
+
+        edges = list(filter(lambda e: e.has_node(node), self.edges))
+        for edge in edges:
+            self.edges.remove(edge)
+            self.edges.add(edge.with_style(style=edge_style))
 
     def successors(self, node: ModuleNode) -> List[ModuleNode]:
         return [e.head for e in self.edges if e.tail == node]

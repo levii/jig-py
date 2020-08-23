@@ -1,4 +1,5 @@
 import dataclasses
+from typing import Union, List
 
 from graphviz import Digraph
 
@@ -9,6 +10,7 @@ from jig.visualizer.module_dependency.domain.value.module_edge import (
     ModuleEdgeCollection,
 )
 from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
+from jig.visualizer.module_dependency.domain.value.penwidth import Color, PenWidth
 from jig.visualizer.module_dependency.presentation.renderer.graph_renderer import (
     GraphRenderer,
 )
@@ -47,3 +49,20 @@ class GraphController:
     def hide(self, node_name: str):
         node = ModuleNode.from_str(node_name)
         self.graph.hide_node(node)
+
+    def style(
+        self,
+        node_names: Union[str, List[str]],
+        color: str = "black",
+        penwidth: str = "normal",
+    ):
+        if isinstance(node_names, str):
+            nodes = [ModuleNode.from_str(node_names)]
+        else:
+            nodes = [ModuleNode.from_str(n) for n in node_names]
+
+        color_ = Color(color)
+        penwidth_ = PenWidth(penwidth)
+
+        for node in nodes:
+            self.graph.style(node=node, color=color_, penwidth=penwidth_)

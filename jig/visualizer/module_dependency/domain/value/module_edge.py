@@ -1,7 +1,7 @@
 import dataclasses
 from typing import Optional, List, Tuple, Dict
 
-from .color import Color
+from .penwidth import Color, PenWidth
 from .module_node import ModuleNode
 
 
@@ -10,12 +10,14 @@ class ModuleEdgeStyle:
     color: Color = dataclasses.field(default=Color.Black)
     fontcolor: Color = dataclasses.field(default=Color.Black)
     labelfontcolor: Color = dataclasses.field(default=Color.Black)
+    penwidth: PenWidth = dataclasses.field(default=PenWidth.Normal)
 
     def to_dict(self) -> Dict[str, str]:
         return {
             "color": self.color.value,
             "fontcolor": self.fontcolor.value,
             "labelfontcolor": self.labelfontcolor.value,
+            "penwidth": self.penwidth.to_size(self.penwidth),
         }
 
     @classmethod
@@ -69,6 +71,9 @@ class ModuleEdge:
         return self.build(
             tail=self.tail, head=self.head, style=ModuleEdgeStyle.darkgray()
         )
+
+    def with_style(self, style: ModuleEdgeStyle) -> "ModuleEdge":
+        return self.build(tail=self.tail, head=self.head, style=style)
 
 
 @dataclasses.dataclass(frozen=True)
