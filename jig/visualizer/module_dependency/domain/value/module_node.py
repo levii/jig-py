@@ -10,12 +10,15 @@ class ModuleNodeStyle:
     color: Color = dataclasses.field(default=Color.Black)
     fontcolor: Color = dataclasses.field(default=Color.Black)
     penwidth: PenWidth = dataclasses.field(default=PenWidth.Normal)
+    filled: bool = False
+    invisible: bool = False
 
     def to_dict(self) -> Dict[str, str]:
         return {
             "color": self.color.value,
             "fontcolor": self.fontcolor.value,
             "penwidth": self.penwidth.to_size(self.penwidth),
+            "style": self.style,
         }
 
     def _clone(self, **changes) -> "ModuleNodeStyle":
@@ -23,6 +26,15 @@ class ModuleNodeStyle:
 
     def with_penwidth(self, penwidth: PenWidth) -> "ModuleNodeStyle":
         return self._clone(penwidth=penwidth)
+
+    @property
+    def style(self) -> str:
+        if self.invisible:
+            return "invisible"
+        if self.filled:
+            return "filled"
+
+        return ""
 
     @classmethod
     def darkgray(cls) -> "ModuleNodeStyle":
@@ -66,6 +78,9 @@ class ModuleNode:
 
     def to_darkgray(self) -> "ModuleNode":
         return self.build(path=self.path, style=ModuleNodeStyle.darkgray())
+
+    def to_invisible(self) -> "ModuleNode":
+        return self.build(path=self.path, style=ModuleNodeStyle(invisible=True))
 
     def with_style(self, style: ModuleNodeStyle) -> "ModuleNode":
         return self.build(path=self.path, style=style)

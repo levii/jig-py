@@ -82,12 +82,12 @@ class Graph:
     def hide_node(self, node: ModuleNode):
         if node in self.nodes:
             self.nodes.remove(node)
-            self.nodes.add(node.to_darkgray())
+            self.nodes.add(node.to_invisible())
 
         edges = list(filter(lambda e: e.has_node(node), self.edges))
         for edge in edges:
             self.edges.remove(edge)
-            self.edges.add(edge.to_darkgray())
+            self.edges.add(edge.to_invisible())
 
         for cluster in self.clusters.values():
             cluster.hide_node(node)
