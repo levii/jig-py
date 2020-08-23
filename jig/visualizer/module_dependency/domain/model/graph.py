@@ -17,6 +17,15 @@ class Graph:
     edges: Set[ModuleEdge] = dataclasses.field(default_factory=set)
     clusters: Dict[ModuleNode, Cluster] = dataclasses.field(default_factory=dict)
 
+    def to_dict(self) -> dict:
+        nodes = sorted([n.name for n in self.nodes])
+        edges = sorted([(e.tail.name, e.head.name) for e in self.edges])
+        clusters = dict(
+            [(node.name, cluster.to_dict()) for node, cluster in self.clusters.items()]
+        )
+
+        return {"nodes": nodes, "edges": edges, "clusters": clusters}
+
     def add_node(self, node: ModuleNode):
         self.nodes.add(node)
 
