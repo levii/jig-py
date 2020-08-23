@@ -82,22 +82,24 @@ class Graph:
     def hide_node(self, node: ModuleNode):
         if node in self.nodes:
             self.nodes.remove(node)
-            self.nodes.add(node.to_darkgray())
+            self.nodes.add(node.to_invisible())
 
         edges = list(filter(lambda e: e.has_node(node), self.edges))
         for edge in edges:
             self.edges.remove(edge)
-            self.edges.add(edge.to_darkgray())
+            self.edges.add(edge.to_invisible())
 
         for cluster in self.clusters.values():
             cluster.hide_node(node)
 
-    def style(self, node: ModuleNode, color: Color, penwidth: PenWidth):
+    def style(
+        self, node: ModuleNode, color: Color, fontcolor: Color, penwidth: PenWidth
+    ):
         node_style = ModuleNodeStyle(
-            color=color, fontcolor=color, fillcolor=Color.White, penwidth=penwidth
+            color=color, fontcolor=fontcolor, penwidth=penwidth
         )
         edge_style = ModuleEdgeStyle(
-            color=color, fontcolor=color, labelfontcolor=color, penwidth=penwidth
+            color=color, fontcolor=fontcolor, penwidth=penwidth
         )
 
         if node in self.nodes:
@@ -108,6 +110,45 @@ class Graph:
         for edge in edges:
             self.edges.remove(edge)
             self.edges.add(edge.with_style(style=edge_style))
+
+    def auto_highlight(self):
+        source_nodes: Dict[ModuleNode, List[ModuleEdge]] = dict(
+            [(node, []) for node in self.nodes]
+        )
+        dest_nodes: Dict[ModuleNode, List[ModuleEdge]] = dict(
+            [(node, []) for node in self.nodes]
+        )
+        for edge in self.edges:
+            source_nodes[edge.tail].append(edge)
+            dest_nodes[edge.head].append(edge)
+
+        # entrypoint
+        entrypoint_node_style = ModuleNodeStyle(
+            color=Color.Purple, fontcolor=Color.White, filled=True
+        )
+        for node, edges in source_nodes.items():
+            if len(edges) == 0:
+                self.nodes.remove(node)
+                self.nodes.add(node.with_style(style=entrypoint_node_style))
+
+        # fundamental
+        fundamental_node_style = ModuleNodeStyle(
+            color=Color.Teal, fontcolor=Color.White, filled=True
+        )
+        for node, edges in dest_nodes.items():
+            if len(edges) == 0:
+                self.nodes.remove(node)
+                self.nodes.add(node.with_style(style=fundamental_node_style))
+
+        # both reference
+        both_reference_edge_style = ModuleEdgeStyle(
+            color=Color.Red, penwidth=PenWidth.Bold
+        )
+        for edge in self.edges:
+            reverse = edge.build_reverse()
+            if reverse in self.edges:
+                self.edges.remove(edge)
+                self.edges.add(edge.with_style(style=both_reference_edge_style))
 
     def successors(self, node: ModuleNode) -> List[ModuleNode]:
         return [e.head for e in self.edges if e.tail == node]

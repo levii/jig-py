@@ -9,15 +9,16 @@ from .module_path import ModulePath
 class ModuleNodeStyle:
     color: Color = dataclasses.field(default=Color.Black)
     fontcolor: Color = dataclasses.field(default=Color.Black)
-    fillcolor: Color = dataclasses.field(default=Color.White)
     penwidth: PenWidth = dataclasses.field(default=PenWidth.Normal)
+    filled: bool = False
+    invisible: bool = False
 
     def to_dict(self) -> Dict[str, str]:
         return {
             "color": self.color.value,
             "fontcolor": self.fontcolor.value,
-            "fillcolor": self.fillcolor.value,
             "penwidth": self.penwidth.to_size(self.penwidth),
+            "style": self.style,
         }
 
     def _clone(self, **changes) -> "ModuleNodeStyle":
@@ -26,17 +27,22 @@ class ModuleNodeStyle:
     def with_penwidth(self, penwidth: PenWidth) -> "ModuleNodeStyle":
         return self._clone(penwidth=penwidth)
 
-    @classmethod
-    def darkgray(cls) -> "ModuleNodeStyle":
-        return cls(
-            color=Color.Darkgray, fontcolor=Color.Darkgray, fillcolor=Color.White,
-        )
+    @property
+    def style(self) -> str:
+        if self.invisible:
+            return "invisible"
+        if self.filled:
+            return "filled"
+
+        return ""
 
 
 @dataclasses.dataclass(frozen=True)
 class ModuleNode:
     path: ModulePath
-    style: ModuleNodeStyle = dataclasses.field(default_factory=ModuleNodeStyle)
+    style: ModuleNodeStyle = dataclasses.field(
+        default_factory=ModuleNodeStyle, compare=False
+    )
 
     @classmethod
     def from_str(cls, path: str) -> "ModuleNode":
@@ -68,8 +74,8 @@ class ModuleNode:
         new_path = self.path.limit_path_level(max_path_level)
         return ModuleNode(new_path)
 
-    def to_darkgray(self) -> "ModuleNode":
-        return self.build(path=self.path, style=ModuleNodeStyle.darkgray())
+    def to_invisible(self) -> "ModuleNode":
+        return self.build(path=self.path, style=ModuleNodeStyle(invisible=True))
 
     def with_style(self, style: ModuleNodeStyle) -> "ModuleNode":
         return self.build(path=self.path, style=style)

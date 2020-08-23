@@ -54,6 +54,7 @@ class GraphController:
         self,
         node_names: Union[str, List[str]],
         color: str = "black",
+        fontcolor: str = "black",
         penwidth: str = "normal",
     ):
         if isinstance(node_names, str):
@@ -62,7 +63,13 @@ class GraphController:
             nodes = [ModuleNode.from_str(n) for n in node_names]
 
         color_ = Color(color)
+        fontcolor_ = Color(fontcolor)
         penwidth_ = PenWidth(penwidth)
 
         for node in nodes:
-            self.graph.style(node=node, color=color_, penwidth=penwidth_)
+            self.graph.style(
+                node=node, color=color_, fontcolor=fontcolor_, penwidth=penwidth_
+            )
+
+    def auto_highlight(self):
+        self.graph.auto_highlight()
