@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Set, List, Dict
+from typing import Set, List, Dict, Optional, Union
 
 from jig.visualizer.module_dependency.domain.model.master_graph import MasterGraph
 from jig.visualizer.module_dependency.domain.value.cluster import Cluster
@@ -30,6 +30,17 @@ class Graph:
         )
 
         return {"nodes": nodes, "edges": edges, "clusters": clusters}
+
+    def find_node_owner(self, node: ModuleNode) -> Optional[Union["Graph", Cluster]]:
+        for cluster in self.clusters.values():
+            owner = cluster.find_node_owner(node)
+            if owner:
+                return owner
+
+        if node in self.nodes:
+            return self
+
+        return None
 
     def add_node(self, node: ModuleNode):
         self.nodes.add(node)
@@ -105,12 +116,16 @@ class Graph:
         return [e.tail for e in self.edges if e.head == node]
 
     def dig(self, node: ModuleNode):
+        node_owner = self.find_node_owner(node)
+        if not node_owner:
+            raise ValueError(f"指定されたモジュール {node.name} が存在しません。")
+
         next_path_level = node.path_level + 1
 
         self._dig_successors(node, next_path_level)
         self._dig_predecessors(node, next_path_level)
         self._dig_inner_edge(node, next_path_level)
-        self._dig_clustering(node, next_path_level)
+        self._dig_clustering(node, next_path_level, node_owner)
 
         self.remove_node(node)
 
@@ -118,12 +133,17 @@ class Graph:
         for edge in self.master_graph.find_edges(node):
             self.add_edge(edge.limit_path_level(next_path_level))
 
-    def _dig_clustering(self, node: ModuleNode, next_path_level: int):
+    def _dig_clustering(
+        self,
+        node: ModuleNode,
+        next_path_level: int,
+        node_owner: Union["Graph", Cluster],
+    ):
         cluster = Cluster(node=node)
         for n in self.master_graph.find_nodes(node):
             cluster.add(n.limit_path_level(next_path_level))
 
-        self.add_cluster(cluster)
+        node_owner.add_cluster(cluster)
 
     def _dig_successors(self, node: ModuleNode, next_path_level: int):
         # 現在のnodeからの接続先エッジを取得
