@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Set
+from typing import Set, Dict
 
 from .module_node import ModuleNode
 
@@ -8,6 +8,7 @@ from .module_node import ModuleNode
 class Cluster:
     node: ModuleNode
     children: Set[ModuleNode] = dataclasses.field(default_factory=set)
+    clusters: Dict[ModuleNode, "Cluster"] = dataclasses.field(default_factory=dict)
 
     def to_dict(self) -> dict:
         nodes = sorted([n.name for n in self.children])
@@ -20,6 +21,9 @@ class Cluster:
 
     def add(self, node: ModuleNode):
         self.children.add(node)
+
+    def add_cluster(self, cluster: "Cluster"):
+        self.clusters[cluster.node] = cluster
 
     def remove(self, node: ModuleNode):
         if node in self.children:
