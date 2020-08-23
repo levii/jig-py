@@ -39,10 +39,6 @@ class ModuleEdgeStyle:
 
         return ""
 
-    @classmethod
-    def darkgray(cls) -> "ModuleEdgeStyle":
-        return cls(color=Color.Darkgray, fontcolor=Color.Darkgray)
-
 
 @dataclasses.dataclass(frozen=True)
 class ModuleEdge:
@@ -81,11 +77,6 @@ class ModuleEdge:
             return self.tail < other.tail
 
         return self.head < other.head
-
-    def to_darkgray(self) -> "ModuleEdge":
-        return self.build(
-            tail=self.tail, head=self.head, style=ModuleEdgeStyle.darkgray()
-        )
 
     def to_invisible(self) -> "ModuleEdge":
         return self.build(

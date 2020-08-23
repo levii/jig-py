@@ -36,10 +36,6 @@ class ModuleNodeStyle:
 
         return ""
 
-    @classmethod
-    def darkgray(cls) -> "ModuleNodeStyle":
-        return cls(color=Color.Darkgray, fontcolor=Color.Darkgray)
-
 
 @dataclasses.dataclass(frozen=True)
 class ModuleNode:
@@ -75,9 +71,6 @@ class ModuleNode:
 
         new_path = self.path.limit_path_level(max_path_level)
         return ModuleNode(new_path)
-
-    def to_darkgray(self) -> "ModuleNode":
-        return self.build(path=self.path, style=ModuleNodeStyle.darkgray())
 
     def to_invisible(self) -> "ModuleNode":
         return self.build(path=self.path, style=ModuleNodeStyle(invisible=True))
