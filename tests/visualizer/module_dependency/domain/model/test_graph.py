@@ -26,33 +26,36 @@ class TestGraph:
         g = Graph()
         g.add_node(node("A"))
 
-        assert len(g.nodes) == 1
-        assert g.nodes == {node("A")}
+        expected = {"nodes": ["A"], "edges": [], "clusters": {}}
+
+        assert g.to_dict() == expected
 
         g.add_node(node("A"))
 
-        assert len(g.nodes) == 1
-        assert g.nodes == {node("A")}
+        assert g.to_dict() == expected
 
     def test_add_edge(self):
         g = Graph()
         g.add_edge(edge("A", "B"))
 
-        assert len(g.edges) == 1
-        assert len(g.nodes) == 2
-        assert g.nodes == {node("A"), node("B")}
-        assert g.edges == {edge("A", "B")}
+        expected = {"nodes": ["A", "B"], "edges": [("A", "B")], "clusters": {}}
+
+        assert g.to_dict() == expected
 
         g.add_edge(edge("A", "B"))
 
-        assert len(g.edges) == 1
+        assert g.to_dict() == expected
 
     def test_add_cluster(self):
         g = Graph()
         g.add_edge(edge("A", "B"))
         g.add_cluster(cluster("pkg", {"A", "B"}))
 
-        assert len(g.clusters) == 1
+        assert g.to_dict() == {
+            "nodes": ["A", "B"],
+            "edges": [("A", "B")],
+            "clusters": {"pkg": {"nodes": ["A", "B"]}},
+        }
 
         with pytest.raises(ValueError):
             g.add_cluster(cluster("pkg", {"C"}))
@@ -61,21 +64,34 @@ class TestGraph:
         g = Graph()
         g.add_edge(edge("A", "B"))
 
-        assert len(g.edges) == 1
-        assert len(g.nodes) == 2
+        assert g.to_dict() == {
+            "nodes": ["A", "B"],
+            "edges": [("A", "B")],
+            "clusters": {},
+        }
 
         g.remove_node(node("A"))
-        assert len(g.edges) == 0
-        assert len(g.nodes) == 1
+
+        assert g.to_dict() == {"nodes": ["B"], "edges": [], "clusters": {}}
 
     def test_remove_node_from_cluster(self):
         g = Graph()
         g.add_edge(edge("A", "B"))
         g.add_cluster(cluster("pkg", {"A"}))
-        assert len(g.clusters) == 1
+
+        assert g.to_dict() == {
+            "nodes": ["A", "B"],
+            "edges": [("A", "B")],
+            "clusters": {"pkg": {"nodes": ["A"]}},
+        }
 
         g.remove_node(node("A"))
-        assert len(g.clusters) == 0
+
+        assert g.to_dict() == {
+            "nodes": ["B"],
+            "edges": [],
+            "clusters": {},
+        }
 
     def test_successors(self):
         g = Graph()
@@ -112,38 +128,47 @@ class TestGraph:
         assert len(g.clusters) == 0
         assert set([n.name for n in g.nodes]) == {"jig.collector"}
 
+        assert g.to_dict() == {
+            "nodes": ["jig.collector"],
+            "edges": [],
+            "clusters": {},
+        }
+
         g.dig(node("jig.collector"))
 
-        assert len(g.nodes) == 2
-        assert len(g.edges) == 1
-        assert len(g.clusters) == 1
-        assert set([n.name for n in g.nodes]) == {
-            "jig.collector.application",
-            "jig.collector.domain",
-        }
-        assert set([(e.tail.name, e.head.name) for e in g.edges]) == {
-            ("jig.collector.application", "jig.collector.domain"),
+        assert g.to_dict() == {
+            "nodes": ["jig.collector.application", "jig.collector.domain"],
+            "edges": [("jig.collector.application", "jig.collector.domain")],
+            "clusters": {
+                "jig.collector": {
+                    "nodes": ["jig.collector.application", "jig.collector.domain"]
+                }
+            },
         }
 
         g.dig(node("jig.collector.domain"))
 
-        assert len(g.nodes) == 3
-        assert len(g.edges) == 3
-        assert len(g.clusters) == 2
-
-        assert set([n.name for n in g.nodes]) == {
-            "jig.collector.application",
-            "jig.collector.domain.source_code",
-            "jig.collector.domain.source_file",
-        }
-        assert set([(e.tail.name, e.head.name) for e in g.edges]) == {
-            ("jig.collector.application", "jig.collector.domain.source_code"),
-            ("jig.collector.application", "jig.collector.domain.source_file"),
-            ("jig.collector.domain.source_code", "jig.collector.domain.source_file"),
-        }
-        domain_cluster = g.clusters[node("jig.collector.domain")]
-        assert domain_cluster.node == node("jig.collector.domain")
-        assert set([n.name for n in domain_cluster.children]) == {
-            "jig.collector.domain.source_code",
-            "jig.collector.domain.source_file",
+        assert g.to_dict() == {
+            "nodes": [
+                "jig.collector.application",
+                "jig.collector.domain.source_code",
+                "jig.collector.domain.source_file",
+            ],
+            "edges": [
+                ("jig.collector.application", "jig.collector.domain.source_code"),
+                ("jig.collector.application", "jig.collector.domain.source_file"),
+                (
+                    "jig.collector.domain.source_code",
+                    "jig.collector.domain.source_file",
+                ),
+            ],
+            "clusters": {
+                "jig.collector": {"nodes": ["jig.collector.application"]},
+                "jig.collector.domain": {
+                    "nodes": [
+                        "jig.collector.domain.source_code",
+                        "jig.collector.domain.source_file",
+                    ]
+                },
+            },
         }
