@@ -1,7 +1,7 @@
 import dataclasses
 from typing import Dict, Optional
 
-from .color import Color
+from .penwidth import Color, PenWidth
 from .module_path import ModulePath
 
 
@@ -10,13 +10,21 @@ class ModuleNodeStyle:
     color: Color = dataclasses.field(default=Color.Black)
     fontcolor: Color = dataclasses.field(default=Color.Black)
     fillcolor: Color = dataclasses.field(default=Color.White)
+    penwidth: PenWidth = dataclasses.field(default=PenWidth.Normal)
 
     def to_dict(self) -> Dict[str, str]:
         return {
             "color": self.color.value,
             "fontcolor": self.fontcolor.value,
             "fillcolor": self.fillcolor.value,
+            "penwidth": self.penwidth.to_size(self.penwidth),
         }
+
+    def _clone(self, **changes) -> "ModuleNodeStyle":
+        return dataclasses.replace(self, **changes)
+
+    def with_penwidth(self, penwidth: PenWidth) -> "ModuleNodeStyle":
+        return self._clone(penwidth=penwidth)
 
     @classmethod
     def darkgray(cls) -> "ModuleNodeStyle":
@@ -62,3 +70,6 @@ class ModuleNode:
 
     def to_darkgray(self) -> "ModuleNode":
         return self.build(path=self.path, style=ModuleNodeStyle.darkgray())
+
+    def with_style(self, style: ModuleNodeStyle) -> "ModuleNode":
+        return self.build(path=self.path, style=style)
