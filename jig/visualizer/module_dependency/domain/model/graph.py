@@ -111,6 +111,45 @@ class Graph:
             self.edges.remove(edge)
             self.edges.add(edge.with_style(style=edge_style))
 
+    def auto_highlight(self):
+        source_nodes: Dict[ModuleNode, List[ModuleEdge]] = dict(
+            [(node, []) for node in self.nodes]
+        )
+        dest_nodes: Dict[ModuleNode, List[ModuleEdge]] = dict(
+            [(node, []) for node in self.nodes]
+        )
+        for edge in self.edges:
+            source_nodes[edge.tail].append(edge)
+            dest_nodes[edge.head].append(edge)
+
+        # entrypoint
+        entrypoint_node_style = ModuleNodeStyle(
+            color=Color.Purple, fontcolor=Color.White, filled=True
+        )
+        for node, edges in source_nodes.items():
+            if len(edges) == 0:
+                self.nodes.remove(node)
+                self.nodes.add(node.with_style(style=entrypoint_node_style))
+
+        # fundamental
+        fundamental_node_style = ModuleNodeStyle(
+            color=Color.Teal, fontcolor=Color.White, filled=True
+        )
+        for node, edges in dest_nodes.items():
+            if len(edges) == 0:
+                self.nodes.remove(node)
+                self.nodes.add(node.with_style(style=fundamental_node_style))
+
+        # both reference
+        both_reference_edge_style = ModuleEdgeStyle(
+            color=Color.Red, penwidth=PenWidth.Bold
+        )
+        for edge in self.edges:
+            reverse = edge.build_reverse()
+            if reverse in self.edges:
+                self.edges.remove(edge)
+                self.edges.add(edge.with_style(style=both_reference_edge_style))
+
     def successors(self, node: ModuleNode) -> List[ModuleNode]:
         return [e.head for e in self.edges if e.tail == node]
 

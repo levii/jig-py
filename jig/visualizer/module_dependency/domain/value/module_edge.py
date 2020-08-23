@@ -80,6 +80,9 @@ class ModuleEdge:
 
         return self.head < other.head
 
+    def build_reverse(self) -> "ModuleEdge":
+        return self.build(tail=self.head, head=self.tail, style=self.style)
+
     def to_invisible(self) -> "ModuleEdge":
         return self.build(
             tail=self.tail, head=self.head, style=ModuleEdgeStyle(invisible=True)

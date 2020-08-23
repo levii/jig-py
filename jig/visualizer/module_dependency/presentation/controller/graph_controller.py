@@ -70,3 +70,6 @@ class GraphController:
             self.graph.style(
                 node=node, color=color_, fontcolor=fontcolor_, penwidth=penwidth_
             )
+
+    def auto_highlight(self):
+        self.graph.auto_highlight()
