@@ -93,10 +93,14 @@ class Graph:
             cluster.hide_node(node)
 
     def style(
-        self, node: ModuleNode, color: Color, fillcolor: Color, penwidth: PenWidth
+        self, node: ModuleNode, color: Color, fontcolor: Color, penwidth: PenWidth
     ):
-        node_style = ModuleNodeStyle(color=color, fontcolor=color, penwidth=penwidth)
-        edge_style = ModuleEdgeStyle(color=color, fontcolor=color, penwidth=penwidth)
+        node_style = ModuleNodeStyle(
+            color=color, fontcolor=fontcolor, penwidth=penwidth
+        )
+        edge_style = ModuleEdgeStyle(
+            color=color, fontcolor=fontcolor, penwidth=penwidth
+        )
 
         if node in self.nodes:
             self.nodes.remove(node)
