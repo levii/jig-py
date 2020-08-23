@@ -40,7 +40,9 @@ class ModuleNodeStyle:
 @dataclasses.dataclass(frozen=True)
 class ModuleNode:
     path: ModulePath
-    style: ModuleNodeStyle = dataclasses.field(default_factory=ModuleNodeStyle)
+    style: ModuleNodeStyle = dataclasses.field(
+        default_factory=ModuleNodeStyle, compare=False
+    )
 
     @classmethod
     def from_str(cls, path: str) -> "ModuleNode":

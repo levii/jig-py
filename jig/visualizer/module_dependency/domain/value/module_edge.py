@@ -44,7 +44,9 @@ class ModuleEdgeStyle:
 class ModuleEdge:
     tail: ModuleNode
     head: ModuleNode
-    style: ModuleEdgeStyle = dataclasses.field(default_factory=ModuleEdgeStyle)
+    style: ModuleEdgeStyle = dataclasses.field(
+        default_factory=ModuleEdgeStyle, compare=False
+    )
 
     @classmethod
     def from_str(cls, tail: str, head: str) -> "ModuleEdge":
