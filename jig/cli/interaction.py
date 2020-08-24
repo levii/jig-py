@@ -14,8 +14,8 @@ from jig.visualizer.module_dependency.presentation.controller.graph_controller i
 @dataclasses.dataclass
 class Jig:
     @classmethod
-    def analyze_module_dependency(cls, target_path: str) -> GraphController:
-        source_codes = _collect_source_codes(target_path=target_path)
+    def analyze_module_dependency(cls, project_root_path: str) -> GraphController:
+        source_codes = _collect_source_codes(project_root_path=project_root_path)
 
         collection = ImportDependencyCollection.build_from_source_code_collection(
             source_codes
