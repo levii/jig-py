@@ -41,6 +41,27 @@ class TestSourceFilePath:
         assert path.is_package
         assert path.module_path == ModulePath.from_str("path.to")
 
+    def test_can_convert_to_module_path__package(self):
+        path = SourceFilePath(
+            root_path=Path("root"), file_path=Path("root/path/to/__init__.py")
+        )
+
+        assert path.can_convert_to_module_path is True
+
+    def test_can_convert_to_module_path__file(self):
+        path = SourceFilePath(root_path=Path("root"), file_path=Path("root/main.py"))
+        assert path.can_convert_to_module_path is True
+
+    def test_can_convert_to_module_path__invalid_file(self):
+        path = SourceFilePath(root_path=Path("root"), file_path=Path("root/.main.py"))
+        assert path.can_convert_to_module_path is False
+
+    def test_can_convert_to_module_path__invalid_path(self):
+        path = SourceFilePath(
+            root_path=Path("root"), file_path=Path("root/.hidden/main.py")
+        )
+        assert path.can_convert_to_module_path is False
+
 
 class TestSourceFilePathResolveImportFrom:
     ROOT_PATH = Path("/jig-py")

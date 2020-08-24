@@ -82,3 +82,18 @@ class SourceFilePath:
     @property
     def is_package(self):
         return self.file_path.stem == "__init__"
+
+    @property
+    def can_convert_to_module_path(self) -> bool:
+        """
+        パスがモジュールパスとして扱えるかどうかを返す。
+        :return:
+        """
+        # ディレクトリパスをチェック
+        dir_path = str(self.relative_path_from_root.parent)
+        if dir_path != "." and dir_path.find(".") >= 0:
+            return False
+
+        # ファイル名の拡張子を外してチェック
+        name = self.relative_path_from_root.stem
+        return name.find(".") < 0
