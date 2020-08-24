@@ -1,7 +1,7 @@
 import dataclasses
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from jig.collector.domain.source_code.source_code_collection import SourceCodeCollection
 from jig.collector.domain.source_code.source_code import SourceCode
@@ -18,18 +18,24 @@ class SourceCodeCollector:
         if target_path.is_dir():
             source_codes.extend(self.collect_directory(target_path))
         else:
-            source_codes.append(self.collect_file(target_path))
+            source_code = self.collect_file(target_path)
+            if source_code:
+                source_codes.append(source_code)
 
         return SourceCodeCollection(source_codes)
 
-    def collect_file(self, target_path: Path) -> SourceCode:
+    def collect_file(self, target_path: Path) -> Optional[SourceCode]:
+        source_file_path = SourceFilePath(
+            root_path=self.root_path, file_path=target_path
+        )
+        if not source_file_path.can_convert_to_module_path:
+            return None
+
         source = target_path.read_text()
 
         return SourceCode.build(
             file=SourceFile(
-                source_file_path=SourceFilePath(
-                    root_path=self.root_path, file_path=target_path
-                ),
+                source_file_path=source_file_path,
                 content=source,
                 size=os.path.getsize(str(target_path)),
             ),
@@ -44,6 +50,8 @@ class SourceCodeCollector:
 
                 path = Path(cur_dir).joinpath(file)
 
-                result.append(self.collect_file(target_path=path))
+                source_code = self.collect_file(target_path=path)
+                if source_code:
+                    result.append(source_code)
 
         return result
