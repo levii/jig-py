@@ -34,21 +34,24 @@ class GraphController:
 
         return cls(g)
 
-    def remove(self, node_name: str):
+    def remove(self, node_name: str) -> "GraphController":
         node = ModuleNode.from_str(node_name)
         self.graph.remove_node(node)
+        return self
 
-    def dig(self, node_name: str):
+    def dig(self, node_name: str) -> "GraphController":
         node = ModuleNode.from_str(node_name)
         self.graph.dig(node)
+        return self
 
     def render(self) -> Digraph:
         renderer = GraphRenderer(self.graph)
         return renderer.render()
 
-    def hide(self, node_name: str):
+    def hide(self, node_name: str) -> "GraphController":
         node = ModuleNode.from_str(node_name)
         self.graph.hide_node(node)
+        return self
 
     def style(
         self,
@@ -56,7 +59,7 @@ class GraphController:
         color: str = "black",
         fontcolor: str = "black",
         penwidth: str = "normal",
-    ):
+    ) -> "GraphController":
         if isinstance(node_names, str):
             nodes = [ModuleNode.from_str(node_names)]
         else:
@@ -70,9 +73,11 @@ class GraphController:
             self.graph.style(
                 node=node, color=color_, fontcolor=fontcolor_, penwidth=penwidth_
             )
+        return self
 
-    def auto_highlight(self):
+    def auto_highlight(self) -> "GraphController":
         self.graph.auto_highlight()
+        return self
 
     def _repr_svg_(self):
         """
