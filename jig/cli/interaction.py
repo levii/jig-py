@@ -29,14 +29,12 @@ class Jig:
         graph = Graph(master_graph=master_graph)
 
         # トップレベルの依存関係をGraphに追加する
-        for dependency in dependencies:
-            edge = (
-                str(dependency.src.path_in_depth(1)),
-                str(dependency.dest.path_in_depth(1)),
-            )
-            if edge[0] == edge[1]:
-                graph.add_node(ModuleNode.from_str(edge[0]))
+        for edge in master_graph.edges:
+            tail = edge.tail.path_in_depth(1).name
+            head = edge.head.path_in_depth(1).name
+            if tail == head:
+                graph.add_node(ModuleNode.from_str(tail))
             else:
-                graph.add_edge(ModuleEdge.from_str(edge[0], edge[1]))
+                graph.add_edge(ModuleEdge.from_str(tail=tail, head=head))
 
         return GraphController(graph=graph)
