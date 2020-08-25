@@ -1,5 +1,4 @@
 import dataclasses
-from typing import Union, List
 
 from graphviz import Digraph
 
@@ -34,42 +33,41 @@ class GraphController:
 
         return cls(g)
 
-    def remove(self, node_name: str) -> "GraphController":
-        node = ModuleNode.from_str(node_name)
-        self.graph.remove_node(node)
+    def remove(self, *node_names: str) -> "GraphController":
+        for node_name in node_names:
+            node = ModuleNode.from_str(node_name)
+            self.graph.remove_node(node)
         return self
 
-    def dig(self, node_name: str) -> "GraphController":
-        node = ModuleNode.from_str(node_name)
-        self.graph.dig(node)
+    def dig(self, *node_names: str) -> "GraphController":
+        for node_name in node_names:
+            node = ModuleNode.from_str(node_name)
+            self.graph.dig(node)
         return self
 
     def render(self) -> Digraph:
         renderer = GraphRenderer(self.graph)
         return renderer.render()
 
-    def hide(self, node_name: str) -> "GraphController":
-        node = ModuleNode.from_str(node_name)
-        self.graph.hide_node(node)
+    def hide(self, *node_names: str) -> "GraphController":
+        for node_name in node_names:
+            node = ModuleNode.from_str(node_name)
+            self.graph.hide_node(node)
         return self
 
     def style(
         self,
-        node_names: Union[str, List[str]],
+        *node_names: str,
         color: str = "black",
         fontcolor: str = "black",
         penwidth: str = "normal",
     ) -> "GraphController":
-        if isinstance(node_names, str):
-            nodes = [ModuleNode.from_str(node_names)]
-        else:
-            nodes = [ModuleNode.from_str(n) for n in node_names]
-
         color_ = Color(color)
         fontcolor_ = Color(fontcolor)
         penwidth_ = PenWidth(penwidth)
 
-        for node in nodes:
+        for node_name in node_names:
+            node = ModuleNode.from_str(node_name)
             self.graph.style(
                 node=node, color=color_, fontcolor=fontcolor_, penwidth=penwidth_
             )
