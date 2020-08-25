@@ -78,6 +78,16 @@ class Graph:
 
         self.clusters[cluster.node] = cluster
 
+    def has_cluster(self, node: ModuleNode) -> bool:
+        if node in self.clusters:
+            return True
+
+        for cluster in self.clusters.values():
+            if cluster.has_cluster(node):
+                return True
+
+        return False
+
     def remove_node(self, node: ModuleNode):
         if node in self.nodes:
             self.nodes.remove(node)
@@ -174,6 +184,10 @@ class Graph:
         return [e.tail for e in self.edges if e.head == node]
 
     def dig(self, node: ModuleNode):
+        if self.has_cluster(node):
+            # 既にクラスタ化されているので、処理をスキップする
+            return
+
         node_owner = self.find_node_owner(node)
         if not node_owner:
             raise ValueError(f"指定されたモジュール {node.name} が存在しません。")

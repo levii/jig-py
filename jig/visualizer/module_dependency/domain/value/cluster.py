@@ -55,3 +55,13 @@ class Cluster:
         if node in self.children:
             self.children.remove(node)
             self.children.add(node.to_invisible())
+
+    def has_cluster(self, node: ModuleNode) -> bool:
+        if node in self.clusters:
+            return True
+
+        for cluster in self.clusters.values():
+            if cluster.has_cluster(node):
+                return True
+
+        return False
