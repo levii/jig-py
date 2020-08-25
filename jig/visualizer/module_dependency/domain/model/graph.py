@@ -22,6 +22,23 @@ class Graph:
     edges: Set[ModuleEdge] = dataclasses.field(default_factory=set)
     clusters: Dict[ModuleNode, Cluster] = dataclasses.field(default_factory=dict)
 
+    def __post_init__(self):
+        self.reset()
+
+    def reset(self) -> None:
+        self.nodes.clear()
+        self.edges.clear()
+        self.clusters.clear()
+
+        # トップレベルの依存関係をGraphに追加する
+        for edge in self.master_graph.edges:
+            tail = edge.tail.path_in_depth(1).name
+            head = edge.head.path_in_depth(1).name
+            if tail == head:
+                self.add_node(ModuleNode.from_str(tail))
+            else:
+                self.add_edge(ModuleEdge.from_str(tail=tail, head=head))
+
     def to_dict(self) -> dict:
         nodes = sorted([n.name for n in self.nodes])
         edges = sorted([(e.tail.name, e.head.name) for e in self.edges])

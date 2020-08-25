@@ -4,8 +4,6 @@ from jig.analyzer.domain.dependency.import_dependency import ImportDependencyCol
 from jig.cli.main import _collect_source_codes
 from jig.visualizer.module_dependency.domain.model.graph import Graph
 from jig.visualizer.module_dependency.domain.model.master_graph import MasterGraph
-from jig.visualizer.module_dependency.domain.value.module_edge import ModuleEdge
-from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
 from jig.visualizer.module_dependency.presentation.controller.graph_controller import (
     GraphController,
 )
@@ -27,14 +25,5 @@ class Jig:
 
         master_graph = MasterGraph.from_tuple_list(dependency_tuples)
         graph = Graph(master_graph=master_graph)
-
-        # トップレベルの依存関係をGraphに追加する
-        for edge in master_graph.edges:
-            tail = edge.tail.path_in_depth(1).name
-            head = edge.head.path_in_depth(1).name
-            if tail == head:
-                graph.add_node(ModuleNode.from_str(tail))
-            else:
-                graph.add_edge(ModuleEdge.from_str(tail=tail, head=head))
 
         return GraphController(graph=graph)
