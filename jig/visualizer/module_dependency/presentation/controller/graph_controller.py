@@ -73,3 +73,15 @@ class GraphController:
 
     def auto_highlight(self):
         self.graph.auto_highlight()
+
+    def _repr_svg_(self):
+        """
+        Jupyter 上でオブジェクト自身を評価したときグラフ描画されるようにする。
+
+        https://ipython.readthedocs.io/en/stable/config/integrating.html#rich-display
+        :return:
+        """
+        g = self.render()
+
+        # graphvizの実装に移譲する
+        return g._repr_svg_()
