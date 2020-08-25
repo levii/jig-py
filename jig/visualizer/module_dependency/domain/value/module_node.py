@@ -62,6 +62,9 @@ class ModuleNode:
     def path_level(self) -> int:
         return self.path.path_level
 
+    def path_in_depth(self, depth: int) -> ModulePath:
+        return self.path.path_in_depth(depth)
+
     def __lt__(self, other: "ModuleNode"):
         return self.path < other.path
 
