@@ -43,3 +43,7 @@ class MasterGraph:
 
     def __iter__(self) -> Iterator[ModuleEdge]:
         return iter(self.edges)
+
+    def to_dict(self) -> dict:
+        edges = sorted([(e.tail.name, e.head.name) for e in self.edges])
+        return {"edges": edges}
