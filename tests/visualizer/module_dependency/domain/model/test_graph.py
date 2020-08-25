@@ -70,8 +70,20 @@ class TestGraph:
             "clusters": {"pkg": {"nodes": ["A", "B"], "clusters": {}}},
         }
 
+        g.clusters[node("pkg")].add_cluster(cluster("pkg.child", {"C"}))
+        assert g.to_dict() == {
+            "nodes": ["A", "B"],
+            "edges": [("A", "B")],
+            "clusters": {
+                "pkg": {
+                    "nodes": ["A", "B"],
+                    "clusters": {"pkg.child": {"clusters": {}, "nodes": ["C"]}},
+                }
+            },
+        }
+
         with pytest.raises(ValueError):
-            g.add_cluster(cluster("pkg", {"C"}))
+            g.add_cluster(cluster("pkg", {"X"}))
 
     def test_remove_node(self):
         g = Graph()
@@ -131,27 +143,46 @@ class TestGraph:
                     "jig.collector.domain.source_code",
                     "jig.collector.domain.source_file",
                 ),
+                ("jig.cli.main", "jig.collector.application"),
             ]
         )
         g = Graph(master_graph=master_graph)
-        g.add_node(node("jig.collector"))
 
         assert g.to_dict() == {
-            "nodes": ["jig.collector"],
+            "nodes": ["jig"],
             "edges": [],
             "clusters": {},
         }
 
-        g.dig(node("jig.collector"))
-
+        g.dig(node("jig"))
         assert g.to_dict() == {
-            "nodes": ["jig.collector.application", "jig.collector.domain"],
-            "edges": [("jig.collector.application", "jig.collector.domain")],
+            "nodes": ["jig.cli", "jig.collector"],
+            "edges": [("jig.cli", "jig.collector")],
             "clusters": {
-                "jig.collector": {
-                    "nodes": ["jig.collector.application", "jig.collector.domain"],
-                    "clusters": {},
-                }
+                "jig": {"clusters": {}, "nodes": ["jig.cli", "jig.collector"]}
+            },
+        }
+
+        g.dig(node("jig.collector"))
+        assert g.to_dict() == {
+            "nodes": ["jig.cli", "jig.collector.application", "jig.collector.domain"],
+            "edges": [
+                ("jig.cli", "jig.collector.application"),
+                ("jig.collector.application", "jig.collector.domain"),
+            ],
+            "clusters": {
+                "jig": {
+                    "clusters": {
+                        "jig.collector": {
+                            "nodes": [
+                                "jig.collector.application",
+                                "jig.collector.domain",
+                            ],
+                            "clusters": {},
+                        }
+                    },
+                    "nodes": ["jig.cli"],
+                },
             },
         }
 
@@ -159,11 +190,13 @@ class TestGraph:
 
         assert g.to_dict() == {
             "nodes": [
+                "jig.cli",
                 "jig.collector.application",
                 "jig.collector.domain.source_code",
                 "jig.collector.domain.source_file",
             ],
             "edges": [
+                ("jig.cli", "jig.collector.application"),
                 ("jig.collector.application", "jig.collector.domain.source_code"),
                 ("jig.collector.application", "jig.collector.domain.source_file"),
                 (
@@ -172,17 +205,22 @@ class TestGraph:
                 ),
             ],
             "clusters": {
-                "jig.collector": {
-                    "nodes": ["jig.collector.application"],
+                "jig": {
                     "clusters": {
-                        "jig.collector.domain": {
-                            "nodes": [
-                                "jig.collector.domain.source_code",
-                                "jig.collector.domain.source_file",
-                            ],
-                            "clusters": {},
-                        },
+                        "jig.collector": {
+                            "nodes": ["jig.collector.application"],
+                            "clusters": {
+                                "jig.collector.domain": {
+                                    "nodes": [
+                                        "jig.collector.domain.source_code",
+                                        "jig.collector.domain.source_file",
+                                    ],
+                                    "clusters": {},
+                                }
+                            },
+                        }
                     },
+                    "nodes": ["jig.cli"],
                 },
             },
         }
@@ -199,7 +237,6 @@ class TestGraph:
             ]
         )
         g = Graph(master_graph=master_graph)
-        g.add_node(node("jig"))
 
         assert g.to_dict() == {
             "nodes": ["jig"],

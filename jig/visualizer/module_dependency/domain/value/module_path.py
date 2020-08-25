@@ -32,3 +32,12 @@ class ModulePath:
 
         new_name = ".".join(self.name.split(".")[:max_path_level])
         return ModulePath(new_name)
+
+    def path_in_depth(self, depth: int) -> "ModulePath":
+        """
+        このパスを指定されたdepthだけ辿ったパスを新たに返します
+        :param depth:
+        :return:
+        """
+        assert depth > 0
+        return ModulePath(".".join(self.parts[:depth]))

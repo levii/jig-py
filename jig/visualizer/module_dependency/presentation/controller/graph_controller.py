@@ -49,6 +49,10 @@ class GraphController:
         renderer = GraphRenderer(self.graph)
         return renderer.render()
 
+    def reset(self) -> "GraphController":
+        self.graph.reset()
+        return self
+
     def hide(self, *node_names: str) -> "GraphController":
         for node_name in node_names:
             node = ModuleNode.from_str(node_name)
