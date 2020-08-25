@@ -91,6 +91,9 @@ class ModuleEdge:
     def with_style(self, style: ModuleEdgeStyle) -> "ModuleEdge":
         return self.build(tail=self.tail, head=self.head, style=style)
 
+    def reset_style(self) -> "ModuleEdge":
+        return self.build(tail=self.tail, head=self.head)
+
 
 @dataclasses.dataclass(frozen=True)
 class ModuleEdgeCollection:
