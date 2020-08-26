@@ -19,6 +19,25 @@ class TestCluster:
         child_cluster.add(node("buzz"))
         assert c.is_empty is False
 
+    def test_descendant_nodes(self):
+        c = Cluster(node=node("jig"))
+        assert c.descendant_nodes() == []
+
+        c.add(node("jig.cli"))
+        assert c.descendant_nodes() == [node("jig.cli")]
+
+        child_cluster = Cluster(
+            node=node("jig.collection"),
+            children={node("jig.collector.domain"), node("jig.collector.application")},
+        )
+        c.add_cluster(child_cluster)
+
+        assert c.descendant_nodes() == [
+            node("jig.collector.application"),
+            node("jig.collector.domain"),
+            node("jig.cli"),
+        ]
+
     def test_find_node_owner(self):
         c = Cluster(node=node("jig"), children={node("jig.cli")})
 
