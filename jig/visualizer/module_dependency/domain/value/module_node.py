@@ -82,3 +82,6 @@ class ModuleNode:
 
     def with_style(self, style: ModuleNodeStyle) -> "ModuleNode":
         return self.build(path=self.path, style=style)
+
+    def reset_style(self) -> "ModuleNode":
+        return self.build(path=self.path)

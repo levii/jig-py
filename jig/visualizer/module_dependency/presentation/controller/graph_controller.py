@@ -77,6 +77,10 @@ class GraphController:
             )
         return self
 
+    def reset_style(self) -> "GraphController":
+        self.graph.reset_style()
+        return self
+
     def auto_highlight(self) -> "GraphController":
         self.graph.auto_highlight()
         return self

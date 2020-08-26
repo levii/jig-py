@@ -138,6 +138,15 @@ class Graph:
             self.edges.remove(edge)
             self.edges.add(edge.with_style(style=edge_style))
 
+    def reset_style(self) -> None:
+        nodes = [node.reset_style() for node in self.nodes]
+        self.nodes.clear()
+        self.nodes.update(nodes)
+
+        edges = [edge.reset_style() for edge in self.edges]
+        self.edges.clear()
+        self.edges.update(edges)
+
     def auto_highlight(self):
         source_nodes: Dict[ModuleNode, List[ModuleEdge]] = dict(
             [(node, []) for node in self.nodes]
