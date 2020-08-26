@@ -203,6 +203,19 @@ class Graph:
             self.edges.remove(edge)
             self.edges.add(edge.with_style(style=edge_style))
 
+    def edge_style(
+        self, tail: ModuleNode, head: ModuleNode, color: Color, penwidth: PenWidth
+    ):
+        edge_style = ModuleEdgeStyle(color=color, penwidth=penwidth)
+        e = ModuleEdge(tail=tail, head=head)
+
+        edges = [
+            edge.with_style(edge_style) if edge.belongs_to(e) else edge
+            for edge in self.edges
+        ]
+        self.edges.clear()
+        self.edges.update(edges)
+
     def reset_style(self) -> None:
         nodes = [node.reset_style() for node in self.nodes]
         self.nodes.clear()
