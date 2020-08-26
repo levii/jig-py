@@ -86,6 +86,21 @@ class GraphController:
             )
         return self
 
+    def edge_style(
+        self,
+        tail_name: str,
+        head_name: str,
+        color: str = "black",
+        penwidth: str = "normal",
+    ) -> "GraphController":
+        color_ = Color(color)
+        penwidth_ = PenWidth(penwidth)
+        tail = ModuleNode.from_str(tail_name)
+        head = ModuleNode.from_str(head_name)
+
+        self.graph.edge_style(tail=tail, head=head, color=color_, penwidth=penwidth_)
+        return self
+
     def reset_style(self) -> "GraphController":
         self.graph.reset_style()
         return self
