@@ -2,7 +2,7 @@ import setuptools
 
 
 name = "jig-py"
-version = "0.0.11"
+version = "0.0.12"
 description = "Jig for Python"
 dependencies = [
     "fire",

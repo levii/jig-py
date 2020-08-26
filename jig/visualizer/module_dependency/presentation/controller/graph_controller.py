@@ -40,6 +40,14 @@ class GraphController:
             self.graph.remove_cluster(node)
         return self
 
+    def focus(self, node_name: str, *extra_node_names: str) -> "GraphController":
+        node = ModuleNode.from_str(node_name)
+        extra_nodes = [ModuleNode.from_str(name) for name in extra_node_names]
+
+        self.graph.focus_nodes_and_clusters(node, *extra_nodes)
+
+        return self
+
     def dig(self, *node_names: str) -> "GraphController":
         for node_name in node_names:
             node = ModuleNode.from_str(node_name)

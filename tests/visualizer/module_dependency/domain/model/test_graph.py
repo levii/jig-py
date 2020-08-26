@@ -248,6 +248,125 @@ class TestGraph:
             "clusters": {"jig": {"clusters": {}, "nodes": ["jig.cli"]}},
         }
 
+    def test_focus(self):
+        g = Graph()
+        g.add_edge(edge("A", "B"))
+        g.add_cluster(cluster("pkg", {"A"}))
+
+        assert g.to_dict() == {
+            "nodes": ["A", "B"],
+            "edges": [("A", "B")],
+            "clusters": {"pkg": {"nodes": ["A"], "clusters": {}}},
+        }
+
+        g.focus_nodes(node("B"))
+
+        assert g.to_dict() == {
+            "nodes": ["B"],
+            "edges": [],
+            "clusters": {},
+        }
+
+        # 冪等なこと
+        g.focus_nodes(node("B"))
+
+        assert g.to_dict() == {
+            "nodes": ["B"],
+            "edges": [],
+            "clusters": {},
+        }
+
+    def test_focus__node_inside_a_package(self):
+        g = Graph()
+        g.add_edge(edge("A", "B"))
+        g.add_cluster(cluster("pkg", {"A"}))
+
+        assert g.to_dict() == {
+            "nodes": ["A", "B"],
+            "edges": [("A", "B")],
+            "clusters": {"pkg": {"nodes": ["A"], "clusters": {}}},
+        }
+
+        g.focus_nodes(node("A"))
+
+        assert g.to_dict() == {
+            "nodes": ["A"],
+            "edges": [],
+            "clusters": {"pkg": {"nodes": ["A"], "clusters": {}}},
+        }
+
+    def test_focus__node_not_found(self):
+        g = Graph()
+        g.add_edge(edge("A", "B"))
+
+        with pytest.raises(Exception):
+            g.focus_nodes(node("C"))
+
+    def test_focus__multiple_nodes(self):
+        g = Graph()
+        g.add_edge(edge("A", "B"))
+        g.add_edge(edge("C", "D"))
+
+        cluster_a = cluster("pkg_a", {"A"})
+        cluster_b = cluster("pkg_b", {"B"})
+
+        cluster_a.add_cluster(cluster_b)
+        g.add_cluster(cluster_a)
+
+        assert g.to_dict() == {
+            "nodes": ["A", "B", "C", "D"],
+            "edges": [("A", "B"), ("C", "D")],
+            "clusters": {
+                "pkg_a": {
+                    "clusters": {"pkg_b": {"clusters": {}, "nodes": ["B"]}},
+                    "nodes": ["A"],
+                }
+            },
+        }
+
+        g.focus_nodes(node("A"), node("C"))
+
+        assert g.to_dict() == {
+            "nodes": ["A", "C"],
+            "edges": [],
+            "clusters": {"pkg_a": {"clusters": {}, "nodes": ["A"]}},
+        }
+
+    def test_focus_nodes_and_clusters(self):
+        g = Graph()
+        g.add_edge(edge("A", "B"))
+        g.add_edge(edge("C", "D"))
+
+        cluster_a = cluster("pkg_a", {"A"})
+        cluster_b = cluster("pkg_b", {"B"})
+
+        cluster_a.add_cluster(cluster_b)
+        g.add_cluster(cluster_a)
+
+        assert g.to_dict() == {
+            "nodes": ["A", "B", "C", "D"],
+            "edges": [("A", "B"), ("C", "D")],
+            "clusters": {
+                "pkg_a": {
+                    "clusters": {"pkg_b": {"clusters": {}, "nodes": ["B"]}},
+                    "nodes": ["A"],
+                }
+            },
+        }
+
+        g.focus_nodes_and_clusters(node("pkg_b"), node("C"))
+
+        assert g.to_dict() == {
+            "nodes": ["B", "C"],
+            "edges": [],
+            "clusters": {
+                "pkg_a": {
+                    "clusters": {"pkg_b": {"clusters": {}, "nodes": ["B"]}},
+                    "nodes": [],
+                }
+            },
+        }
+
     def test_successors(self):
         g = Graph()
         g.add_edge(edge("A", "B"))

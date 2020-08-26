@@ -15,6 +15,10 @@ from jig.visualizer.module_dependency.domain.value.module_node import (
 from jig.visualizer.module_dependency.domain.value.penwidth import Color, PenWidth
 
 
+class NodeNotFoundError(Exception):
+    pass
+
+
 @dataclasses.dataclass
 class Graph:
     master_graph: MasterGraph = dataclasses.field(default_factory=MasterGraph)
@@ -124,6 +128,48 @@ class Graph:
 
         for node in cluster.descendant_nodes():
             self.remove_node(node)
+
+    def focus_nodes(self, node: ModuleNode, *extra_nodes: ModuleNode):
+        """
+        指定されたノードのみをグラフに残す。
+        :param node: 残したいノード
+        :param extra_nodes: 追加で残したいノード
+        :return:
+        """
+        focus_nodes = {node, *extra_nodes}
+
+        for focus_node in focus_nodes:
+            if focus_node not in self.nodes:
+                raise NodeNotFoundError(f"Graphに含まれないノードが指定されました: {focus_node}")
+
+        for current_node in list(self.nodes):
+            if current_node not in focus_nodes:
+                self.remove_node(current_node)
+
+    def focus_nodes_and_clusters(self, node: ModuleNode, *extra_nodes: ModuleNode):
+        """
+        指定されたノードおよびクラスタのみをグラフに残す。
+        :param node: 残したいノードおよびクラスタ
+        :param extra_nodes: 追加で残したいノードおよびクラスタ
+        :return:
+        """
+        input_nodes = {node, *extra_nodes}
+        focus_nodes = set()
+
+        for node in input_nodes:
+            cluster = self.find_cluster(node)
+            if cluster:
+                focus_nodes |= set(cluster.descendant_nodes())
+                continue
+
+            if node in self.nodes:
+                focus_nodes.add(node)
+
+        if len(focus_nodes) == 0:
+            # 残すノードが見つからなかった場合はフォーカスできないので何もしない
+            return
+
+        self.focus_nodes(focus_nodes.pop(), *focus_nodes)
 
     def hide_node(self, node: ModuleNode):
         if node in self.nodes:
