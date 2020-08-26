@@ -39,6 +39,17 @@ class Cluster:
 
         return nodes
 
+    def find_cluster(self, node: ModuleNode) -> Optional["Cluster"]:
+        for cluster in self.clusters.values():
+            if cluster.node == node:
+                return cluster
+
+            sub_cluster = cluster.find_cluster(node)
+            if sub_cluster:
+                return sub_cluster
+
+        return None
+
     def find_node_owner(self, node: ModuleNode) -> Optional["Cluster"]:
         if node in self.children:
             return self

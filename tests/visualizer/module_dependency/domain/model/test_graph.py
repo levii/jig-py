@@ -22,6 +22,21 @@ def cluster(name: str, children: Set[str]) -> Cluster:
 
 
 class TestGraph:
+    def test_find_cluster(self):
+        g = Graph()
+        g.add_node(node("A"))
+        g.add_node(node("B"))
+
+        cluster_a = cluster("pkg_A", {"A"})
+        cluster_b = cluster("pkg_B", {"B"})
+
+        cluster_a.add_cluster(cluster_b)
+        g.add_cluster(cluster_a)
+
+        assert g.find_cluster(node("x")) is None
+        assert g.find_cluster(node("pkg_A")) is cluster_a
+        assert g.find_cluster(node("pkg_B")) is cluster_b
+
     def test_find_node_owner(self):
         g = Graph()
         g.add_node(node("A"))
