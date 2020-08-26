@@ -171,6 +171,9 @@ class Graph:
 
         self.focus_nodes(focus_nodes.pop(), *focus_nodes)
 
+    def child_node_exists(self, node: ModuleNode) -> bool:
+        return self.master_graph.child_node_exists(node)
+
     def hide_node(self, node: ModuleNode):
         if node in self.nodes:
             self.nodes.remove(node)
@@ -274,6 +277,10 @@ class Graph:
         if self.has_cluster(node):
             # 既にクラスタ化されているので、処理をスキップする
             return
+
+        if not self.child_node_exists(node):
+            # dig できない (指定した node の配下に位置する node が存在しない)
+            raise ValueError(f"指定されたモジュール {node.name} の配下に位置するノードがありません (digできません)")
 
         node_owner = self.find_node_owner(node)
         if not node_owner:
