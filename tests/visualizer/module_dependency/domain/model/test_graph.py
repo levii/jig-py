@@ -203,7 +203,7 @@ class TestGraph:
         g.remove_cluster(node("jig"))
         assert g.to_dict() == {"nodes": [], "edges": [], "clusters": {}}
 
-    def _test_remove_cluster__child_cluster(self):
+    def test_remove_cluster__child_cluster(self):
         # クラスタ内クラスタの削除
         master_graph = MasterGraph.from_tuple_list(
             [
@@ -242,7 +242,11 @@ class TestGraph:
         }
 
         g.remove_cluster(node("jig.collector"))
-        assert g.to_dict() == {"nodes": ["jig.cli"], "edges": [], "clusters": {}}
+        assert g.to_dict() == {
+            "nodes": ["jig.cli"],
+            "edges": [],
+            "clusters": {"jig": {"clusters": {}, "nodes": ["jig.cli"]}},
+        }
 
     def test_successors(self):
         g = Graph()
