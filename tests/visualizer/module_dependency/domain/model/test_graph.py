@@ -22,6 +22,21 @@ def cluster(name: str, children: Set[str]) -> Cluster:
 
 
 class TestGraph:
+    def test_find_cluster(self):
+        g = Graph()
+        g.add_node(node("A"))
+        g.add_node(node("B"))
+
+        cluster_a = cluster("pkg_A", {"A"})
+        cluster_b = cluster("pkg_B", {"B"})
+
+        cluster_a.add_cluster(cluster_b)
+        g.add_cluster(cluster_a)
+
+        assert g.find_cluster(node("x")) is None
+        assert g.find_cluster(node("pkg_A")) is cluster_a
+        assert g.find_cluster(node("pkg_B")) is cluster_b
+
     def test_find_node_owner(self):
         g = Graph()
         g.add_node(node("A"))
@@ -116,6 +131,121 @@ class TestGraph:
             "nodes": ["B"],
             "edges": [],
             "clusters": {},
+        }
+
+    def test_remove_cluster(self):
+        # Graph所有のクラスタ削除
+        g = Graph()
+        g.add_edge(edge("A", "B"))
+        g.add_cluster(cluster("pkg", {"A"}))
+
+        assert g.to_dict() == {
+            "nodes": ["A", "B"],
+            "edges": [("A", "B")],
+            "clusters": {"pkg": {"nodes": ["A"], "clusters": {}}},
+        }
+
+        g.remove_cluster(node("pkg"))
+
+        assert g.to_dict() == {
+            "nodes": ["B"],
+            "edges": [],
+            "clusters": {},
+        }
+
+        # 冪等なこと
+        g.remove_cluster(node("pkg"))
+
+        assert g.to_dict() == {
+            "nodes": ["B"],
+            "edges": [],
+            "clusters": {},
+        }
+
+    def test_remove_cluster__parent_cluster(self):
+        # 子を持つクラスタの削除
+        master_graph = MasterGraph.from_tuple_list(
+            [
+                ("jig.collector.application", "jig.collector.domain.source_code"),
+                ("jig.collector.application", "jig.collector.domain.source_file"),
+                (
+                    "jig.collector.domain.source_code",
+                    "jig.collector.domain.source_file",
+                ),
+                ("jig.cli.main", "jig.collector.application"),
+            ]
+        )
+        g = Graph(master_graph=master_graph)
+        g.dig(node("jig"))
+        g.dig(node("jig.collector"))
+        assert g.to_dict() == {
+            "nodes": ["jig.cli", "jig.collector.application", "jig.collector.domain"],
+            "edges": [
+                ("jig.cli", "jig.collector.application"),
+                ("jig.collector.application", "jig.collector.domain"),
+            ],
+            "clusters": {
+                "jig": {
+                    "clusters": {
+                        "jig.collector": {
+                            "nodes": [
+                                "jig.collector.application",
+                                "jig.collector.domain",
+                            ],
+                            "clusters": {},
+                        }
+                    },
+                    "nodes": ["jig.cli"],
+                },
+            },
+        }
+
+        g.remove_cluster(node("jig"))
+        assert g.to_dict() == {"nodes": [], "edges": [], "clusters": {}}
+
+    def test_remove_cluster__child_cluster(self):
+        # クラスタ内クラスタの削除
+        master_graph = MasterGraph.from_tuple_list(
+            [
+                ("jig.collector.application", "jig.collector.domain.source_code"),
+                ("jig.collector.application", "jig.collector.domain.source_file"),
+                (
+                    "jig.collector.domain.source_code",
+                    "jig.collector.domain.source_file",
+                ),
+                ("jig.cli.main", "jig.collector.application"),
+            ]
+        )
+        g = Graph(master_graph=master_graph)
+        g.dig(node("jig"))
+        g.dig(node("jig.collector"))
+        assert g.to_dict() == {
+            "nodes": ["jig.cli", "jig.collector.application", "jig.collector.domain"],
+            "edges": [
+                ("jig.cli", "jig.collector.application"),
+                ("jig.collector.application", "jig.collector.domain"),
+            ],
+            "clusters": {
+                "jig": {
+                    "clusters": {
+                        "jig.collector": {
+                            "nodes": [
+                                "jig.collector.application",
+                                "jig.collector.domain",
+                            ],
+                            "clusters": {},
+                        }
+                    },
+                    "nodes": ["jig.cli"],
+                },
+            },
+        }
+
+        g.remove_cluster(node("jig.collector"))
+        assert g.to_dict() == {
+            "nodes": ["jig.cli"],
+            "edges": [],
+            "clusters": {"jig": {"clusters": {}, "nodes": ["jig.cli"]}},
         }
 
     def test_successors(self):

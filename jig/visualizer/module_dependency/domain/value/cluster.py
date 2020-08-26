@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Set, Dict, Optional
+from typing import Set, Dict, Optional, List
 
 from .module_node import ModuleNode
 
@@ -24,6 +24,31 @@ class Cluster:
             return False
 
         return all([cluster.is_empty for cluster in self.clusters.values()])
+
+    def descendant_nodes(self) -> List[ModuleNode]:
+        """
+        クラスタに含まれる子孫ノード（子クラスタのノードを含む）を返す。
+        :return:
+        """
+        nodes = []
+        for cluster in self.clusters.values():
+            nodes += cluster.descendant_nodes()
+
+        for node in sorted(self.children):
+            nodes.append(node)
+
+        return nodes
+
+    def find_cluster(self, node: ModuleNode) -> Optional["Cluster"]:
+        for cluster in self.clusters.values():
+            if cluster.node == node:
+                return cluster
+
+            sub_cluster = cluster.find_cluster(node)
+            if sub_cluster:
+                return sub_cluster
+
+        return None
 
     def find_node_owner(self, node: ModuleNode) -> Optional["Cluster"]:
         if node in self.children:

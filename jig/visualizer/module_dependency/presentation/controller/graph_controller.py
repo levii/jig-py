@@ -37,6 +37,7 @@ class GraphController:
         for node_name in node_names:
             node = ModuleNode.from_str(node_name)
             self.graph.remove_node(node)
+            self.graph.remove_cluster(node)
         return self
 
     def dig(self, *node_names: str) -> "GraphController":
