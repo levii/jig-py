@@ -97,3 +97,20 @@ class GraphController:
 
         # graphvizの実装に移譲する
         return g._repr_svg_()
+
+    @dataclasses.dataclass
+    class DigraphDot:
+        graph: Digraph
+
+        def __str__(self) -> str:
+            return str(self.graph)
+
+        def _repr_markdown_(self):
+            """
+            Jupyter 上でオブジェクト自身を評価した時マークダウンとして解釈・描画されるようにする。
+            :return:
+            """
+            return f"```\n{self.graph}\n```"
+
+    def render_dot(self) -> "DigraphDot":
+        return self.DigraphDot(self.render())
