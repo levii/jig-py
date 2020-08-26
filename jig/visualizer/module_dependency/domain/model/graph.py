@@ -171,6 +171,9 @@ class Graph:
 
         self.focus_nodes(focus_nodes.pop(), *focus_nodes)
 
+    def child_node_exists(self, node: ModuleNode) -> bool:
+        return self.master_graph.child_node_exists(node)
+
     def hide_node(self, node: ModuleNode):
         if node in self.nodes:
             self.nodes.remove(node)

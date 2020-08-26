@@ -41,6 +41,16 @@ class MasterGraph:
 
         return result
 
+    def child_node_exists(self, node: ModuleNode) -> bool:
+        for edge in self.edges:
+            for other_node in [edge.head, edge.tail]:
+                # node よりも path_level の大きい (深い階層) の node が存在するか？ をチェックする
+                if other_node.path_level > node.path_level and other_node.belongs_to(
+                    node
+                ):
+                    return True
+        return False
+
     def __iter__(self) -> Iterator[ModuleEdge]:
         return iter(self.edges)
 
