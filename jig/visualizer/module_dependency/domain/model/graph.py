@@ -265,6 +265,10 @@ class Graph:
             # 既にクラスタ化されているので、処理をスキップする
             return
 
+        if not self.child_node_exists(node):
+            # dig できない (指定した node の配下に位置する node が存在しない)
+            raise ValueError(f"指定されたモジュール {node.name} の配下に位置するノードがありません (digできません)")
+
         node_owner = self.find_node_owner(node)
         if not node_owner:
             raise ValueError(f"指定されたモジュール {node.name} が存在しません。")
