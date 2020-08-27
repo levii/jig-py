@@ -24,6 +24,5 @@ $ pip install jig-py
 また、[Graphviz](https://www.graphviz.org/) を別途インストールする必要があります。
 
 
-JupyterLab Notebook 上での利用方法は[クイックスタート](https://github.com/levii/jig-py/docs/quick_start.ipynb) を参照してください。
-
-
+JupyterLab Notebook 上での利用方法は[クイックスタート](https://htmlpreview.github.io/?https://github.com/levii/jig-py/blob/master/quick_start.html) を参照してください。
+手元のJupyterLabで実行する際には、 quick_start.ipynb ファイルを開いてください。
