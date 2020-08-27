@@ -15,9 +15,9 @@ class GraphRenderer:
 
         for node in sorted(self.graph.nodes):
             node_options = node.style.to_dict()
-            # 描画する node の配下に位置する node が存在する場合には、 shape=record として表示する
+            # 描画する node の配下に位置する node が存在する場合には、 shape=rect として表示する
             if self.graph.child_node_exists(node):
-                node_options["shape"] = "record"
+                node_options["shape"] = "rect"
             d.node(name=node.path.name, **node_options)
 
         for edge in sorted(self.graph.edges):
