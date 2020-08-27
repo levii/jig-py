@@ -137,4 +137,4 @@ dmypy.json
 # Ignore default output directory
 output/
 
-!docs/*.ipynb
+quick_start.ipynb
