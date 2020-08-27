@@ -97,8 +97,20 @@ class TestGraph:
             },
         }
 
-        with pytest.raises(ValueError):
-            g.add_cluster(cluster("pkg", {"X"}))
+        # 親グラフが持っていないノードを含むクラスタが追加されたら、
+        # 親グラフに含まれないノードを親グラフのノード管理に含める
+        g.add_cluster(cluster("pkg_x", {"X"}))
+        assert g.to_dict() == {
+            "nodes": ["A", "B", "X"],
+            "edges": [("A", "B")],
+            "clusters": {
+                "pkg": {
+                    "nodes": ["A", "B"],
+                    "clusters": {"pkg.child": {"clusters": {}, "nodes": ["C"]}},
+                },
+                "pkg_x": {"nodes": ["X"], "clusters": {}},
+            },
+        }
 
     def test_remove_node(self):
         g = Graph()
@@ -584,3 +596,92 @@ class TestGraph:
 
         with pytest.raises(ValueError):
             g.dig(node("foo"))
+
+
+class TestGraphScenario:
+    """
+    複数の操作を行うシナリオテスト
+    """
+
+    def test_remove_and_dig(self):
+        """
+        エッジの生えていないクラスタ内ノードが発生したとき、エラーにならずそのノードがGraphのnodesに追加されること
+        """
+        master_graph = MasterGraph.from_tuple_list(
+            [
+                ("tests.fixtures", "jig.visualizer"),
+                ("tests.visualizer", "jig.visualizer"),
+            ]
+        )
+
+        g = Graph(master_graph=master_graph)
+        assert g.to_dict() == {
+            "nodes": ["jig", "tests"],
+            "edges": [("tests", "jig")],
+            "clusters": {},
+        }
+
+        g.remove_node(node("jig"))
+        assert g.to_dict() == {
+            "nodes": ["tests"],
+            "edges": [],
+            "clusters": {},
+        }
+
+        g.dig(node("tests"))
+        assert g.to_dict() == {
+            "nodes": ["tests.fixtures", "tests.visualizer"],
+            "edges": [],
+            "clusters": {
+                "tests": {
+                    "nodes": ["tests.fixtures", "tests.visualizer"],
+                    "clusters": {},
+                }
+            },
+        }
+
+    def test_remove_and_dig_inside_cluster(self):
+        """
+        エッジの生えていないノードがネストされたクラスタ内で発生したとき、そのノードがGraphのnodesに追加されること
+        """
+        master_graph = MasterGraph.from_tuple_list(
+            [("tests.fixtures.download", "jig.visualizer")]
+        )
+
+        g = Graph(master_graph=master_graph)
+        assert g.to_dict() == {
+            "nodes": ["jig", "tests"],
+            "edges": [("tests", "jig")],
+            "clusters": {},
+        }
+
+        g.dig(node("tests"))
+        assert g.to_dict() == {
+            "nodes": ["jig", "tests.fixtures"],
+            "edges": [("tests.fixtures", "jig")],
+            "clusters": {"tests": {"nodes": ["tests.fixtures"], "clusters": {}}},
+        }
+
+        g.remove_node(node("jig"))
+        assert g.to_dict() == {
+            "nodes": ["tests.fixtures"],
+            "edges": [],
+            "clusters": {"tests": {"nodes": ["tests.fixtures"], "clusters": {}}},
+        }
+
+        g.dig(node("tests.fixtures"))
+        assert g.to_dict() == {
+            "nodes": ["tests.fixtures.download"],
+            "edges": [],
+            "clusters": {
+                "tests": {
+                    "nodes": [],
+                    "clusters": {
+                        "tests.fixtures": {
+                            "nodes": ["tests.fixtures.download"],
+                            "clusters": {},
+                        }
+                    },
+                }
+            },
+        }

@@ -88,8 +88,11 @@ class Graph:
 
     def add_cluster(self, cluster: Cluster):
         not_included = cluster.children - self.nodes
-        if not_included:
-            raise ValueError(f"Graphのnodesに含まれないchildrenがあります: {not_included}")
+
+        # 親グラフが全てのノード情報を持つ前提条件を守るため、
+        # 親グラフに含まれないノードを親グラフのノード管理に含める
+        for node in not_included:
+            self.add_node(node)
 
         self.clusters[cluster.node] = cluster
 
@@ -307,7 +310,9 @@ class Graph:
     ):
         cluster = Cluster(node=node)
         for n in self.master_graph.find_nodes(node):
-            cluster.add(n.limit_path_level(next_path_level))
+            new_node = n.limit_path_level(next_path_level)
+            cluster.add(new_node)
+            self.add_node(new_node)
 
         node_owner.add_cluster(cluster)
 
