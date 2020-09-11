@@ -124,6 +124,15 @@ class Graph:
 
         self._remove_node_from_cluster(node)
 
+    def is_removed_node(self, node: ModuleNode) -> bool:
+        if node in self.list_all_nodes():
+            return False
+
+        if not self.master_graph.has_module(node.path):
+            return False
+
+        return True
+
     def _remove_node_from_cluster(self, node: ModuleNode):
         # Dict#values() で for を回しているときには、要素削除できないので、 List にキャストする
         for cluster in list(self.clusters.values()):

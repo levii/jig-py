@@ -277,6 +277,64 @@ class TestGraph:
             node("pkg.xxx"),
         ]
 
+    def test_is_removed_node(self):
+        # クラスタ内クラスタの削除
+        master_graph = MasterGraph.from_tuple_list(
+            [
+                ("jig.collector.application", "jig.collector.domain.source_code"),
+                ("jig.collector.application", "jig.collector.domain.source_file"),
+                (
+                    "jig.collector.domain.source_code",
+                    "jig.collector.domain.source_file",
+                ),
+                ("jig.cli.main", "jig.collector.application"),
+            ]
+        )
+        g = Graph(master_graph=master_graph)
+        g.dig(node("jig"))
+        g.dig(node("jig.collector"))
+        assert g.to_dict() == {
+            "nodes": ["jig.cli", "jig.collector.application", "jig.collector.domain"],
+            "edges": [
+                ("jig.cli", "jig.collector.application"),
+                ("jig.collector.application", "jig.collector.domain"),
+            ],
+            "clusters": {
+                "jig": {
+                    "clusters": {
+                        "jig.collector": {
+                            "nodes": [
+                                "jig.collector.application",
+                                "jig.collector.domain",
+                            ],
+                            "clusters": {},
+                        }
+                    },
+                    "nodes": ["jig.cli"],
+                },
+            },
+        }
+
+        assert g.is_removed_node(node("the.name.is.not.in.the.graph")) is False
+        assert g.is_removed_node(node("jig")) is False
+        assert g.is_removed_node(node("jig.cli")) is False
+        assert g.is_removed_node(node("jig.collector")) is False
+        assert g.is_removed_node(node("jig.collector.application")) is False
+        assert g.is_removed_node(node("jig.collector.domain")) is False
+
+        g.remove_node(node("jig.cli"))
+        assert g.is_removed_node(node("jig.cli")) is True
+        assert g.is_removed_node(node("jig")) is False
+
+        g.remove_node(node("jig.collector.application"))
+        assert g.is_removed_node(node("jig.collector.application")) is True
+        assert g.is_removed_node(node("jig.collector")) is False
+
+        g.remove_node(node("jig.collector.domain"))
+        assert g.is_removed_node(node("jig.collector.domain")) is True
+        assert g.is_removed_node(node("jig.collector")) is True
+        assert g.is_removed_node(node("jig")) is True
+
     def test_focus(self):
         g = Graph()
         g.add_edge(edge("A", "B"))
