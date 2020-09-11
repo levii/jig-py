@@ -25,6 +25,15 @@ class Cluster:
 
         return all([cluster.is_empty for cluster in self.clusters.values()])
 
+    def list_all_nodes(self) -> List[ModuleNode]:
+        nodes = {self.node}
+        nodes.update(self.children)
+
+        for cluster in self.clusters.values():
+            nodes.update(cluster.list_all_nodes())
+
+        return sorted(nodes)
+
     def descendant_nodes(self) -> List[ModuleNode]:
         """
         クラスタに含まれる子孫ノード（子クラスタのノードを含む）を返す。

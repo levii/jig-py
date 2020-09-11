@@ -52,6 +52,14 @@ class Graph:
 
         return {"nodes": nodes, "edges": edges, "clusters": clusters}
 
+    def list_all_nodes(self) -> List[ModuleNode]:
+        """クラスタも含めた全てのノードを返す"""
+        nodes = set(self.nodes)
+        for cluster in self.clusters.values():
+            nodes.update(cluster.list_all_nodes())
+
+        return sorted(nodes)
+
     def find_cluster(self, node: ModuleNode) -> Optional[Cluster]:
         for cluster in self.clusters.values():
             if cluster.node == node:

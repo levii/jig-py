@@ -260,6 +260,23 @@ class TestGraph:
             "clusters": {"jig": {"clusters": {}, "nodes": ["jig.cli"]}},
         }
 
+    def test_list_all_nodes(self):
+        g = Graph()
+        g.add_edge(edge("A", "B"))
+
+        cluster_a = cluster("pkg", {"A"})
+        cluster_b = cluster("pkg.xxx", {"B"})
+
+        cluster_a.add_cluster(cluster_b)
+        g.add_cluster(cluster_a)
+
+        assert g.list_all_nodes() == [
+            node("A"),
+            node("B"),
+            node("pkg"),
+            node("pkg.xxx"),
+        ]
+
     def test_focus(self):
         g = Graph()
         g.add_edge(edge("A", "B"))

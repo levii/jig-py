@@ -19,6 +19,31 @@ class TestCluster:
         child_cluster.add(node("buzz"))
         assert c.is_empty is False
 
+    def test_list_all_nodes(self):
+        c = Cluster(node=node("foo"), children={node("foo.foo")})
+        assert c.list_all_nodes() == [node("foo"), node("foo.foo")]
+
+        child_cluster = Cluster(node=node("bar"), children={node("bar.bar")})
+        c.add_cluster(child_cluster)
+
+        assert c.list_all_nodes() == [
+            node("bar"),
+            node("bar.bar"),
+            node("foo"),
+            node("foo.foo"),
+        ]
+
+        grand_child_cluster = Cluster(node=node("buzz"), children={node("buzz.buzz")})
+        child_cluster.add_cluster(grand_child_cluster)
+        assert c.list_all_nodes() == [
+            node("bar"),
+            node("bar.bar"),
+            node("buzz"),
+            node("buzz.buzz"),
+            node("foo"),
+            node("foo.foo"),
+        ]
+
     def test_descendant_nodes(self):
         c = Cluster(node=node("jig"))
         assert c.descendant_nodes() == []
