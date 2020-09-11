@@ -6,6 +6,7 @@ from jig.visualizer.module_dependency.domain.value.module_edge import (
     ModuleEdgeCollection,
 )
 from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
+from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
 
 
 @dataclasses.dataclass
@@ -17,6 +18,13 @@ class MasterGraph:
     @classmethod
     def from_tuple_list(cls, edges: List[Tuple[str, str]]) -> "MasterGraph":
         return cls(ModuleEdgeCollection.from_tuple_list(edges))
+
+    def has_module(self, path: ModulePath) -> bool:
+        for edge in self.edges:
+            if any([node.path.belongs_to(path) for node in [edge.tail, edge.head]]):
+                return True
+
+        return False
 
     def find_parent_edge(self, edge: ModuleEdge) -> Optional[ModuleEdge]:
         return self.edges.find_parent_edge(edge=edge)
