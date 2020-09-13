@@ -37,7 +37,7 @@ class GraphController:
         for node_name in node_names:
             node = ModuleNode.from_str(node_name)
             self.graph.remove_node(node)
-            self.graph.remove_cluster(node)
+            self.graph.remove_cluster(node.path)
         return self
 
     def focus(self, node_name: str, *extra_node_names: str) -> "GraphController":

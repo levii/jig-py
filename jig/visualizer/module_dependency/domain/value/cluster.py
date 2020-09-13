@@ -49,12 +49,12 @@ class Cluster:
 
         return nodes
 
-    def find_cluster(self, node: ModuleNode) -> Optional["Cluster"]:
+    def find_cluster(self, path: ModulePath) -> Optional["Cluster"]:
         for cluster in self.clusters.values():
-            if cluster.module_path == node.path:
+            if cluster.module_path == path:
                 return cluster
 
-            sub_cluster = cluster.find_cluster(node)
+            sub_cluster = cluster.find_cluster(path)
             if sub_cluster:
                 return sub_cluster
 

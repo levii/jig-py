@@ -40,9 +40,9 @@ class TestGraph:
         cluster_a.add_cluster(cluster_b)
         g.add_cluster(cluster_a)
 
-        assert g.find_cluster(node("x")) is None
-        assert g.find_cluster(node("pkg_A")) is cluster_a
-        assert g.find_cluster(node("pkg_B")) is cluster_b
+        assert g.find_cluster(path("x")) is None
+        assert g.find_cluster(path("pkg_A")) is cluster_a
+        assert g.find_cluster(path("pkg_B")) is cluster_b
 
     def test_find_node_owner(self):
         g = Graph()
@@ -164,7 +164,7 @@ class TestGraph:
             "clusters": {"pkg": {"nodes": ["A"], "clusters": {}}},
         }
 
-        g.remove_cluster(node("pkg"))
+        g.remove_cluster(path("pkg"))
 
         assert g.to_dict() == {
             "nodes": ["B"],
@@ -173,7 +173,7 @@ class TestGraph:
         }
 
         # 冪等なこと
-        g.remove_cluster(node("pkg"))
+        g.remove_cluster(path("pkg"))
 
         assert g.to_dict() == {
             "nodes": ["B"],
@@ -219,7 +219,7 @@ class TestGraph:
             },
         }
 
-        g.remove_cluster(node("jig"))
+        g.remove_cluster(path("jig"))
         assert g.to_dict() == {"nodes": [], "edges": [], "clusters": {}}
 
     def test_remove_cluster__child_cluster(self):
@@ -260,7 +260,7 @@ class TestGraph:
             },
         }
 
-        g.remove_cluster(node("jig.collector"))
+        g.remove_cluster(path("jig.collector"))
         assert g.to_dict() == {
             "nodes": ["jig.cli"],
             "edges": [],

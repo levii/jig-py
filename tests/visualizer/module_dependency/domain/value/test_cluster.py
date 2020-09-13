@@ -79,9 +79,9 @@ class TestCluster:
         )
         c.add_cluster(child_cluster)
 
-        assert c.find_cluster(node("x")) is None
-        assert c.find_cluster(node("jig")) is None
-        assert c.find_cluster(node("jig.collector")) is child_cluster
+        assert c.find_cluster(path("x")) is None
+        assert c.find_cluster(path("jig")) is None
+        assert c.find_cluster(path("jig.collector")) is child_cluster
 
     def test_find_node_owner(self):
         c = Cluster(module_path=path("jig"), children={node("jig.cli")})

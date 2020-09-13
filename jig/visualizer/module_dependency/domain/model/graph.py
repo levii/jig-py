@@ -61,12 +61,12 @@ class Graph:
 
         return sorted(modules)
 
-    def find_cluster(self, node: ModuleNode) -> Optional[Cluster]:
+    def find_cluster(self, path: ModulePath) -> Optional[Cluster]:
         for cluster in self.clusters.values():
-            if cluster.module_path == node.path:
+            if cluster.module_path == path:
                 return cluster
 
-            sub_cluster = cluster.find_cluster(node)
+            sub_cluster = cluster.find_cluster(path)
             if sub_cluster:
                 return sub_cluster
 
@@ -142,8 +142,8 @@ class Graph:
             if cluster.is_empty:
                 del self.clusters[cluster.module_path]
 
-    def remove_cluster(self, node: ModuleNode):
-        cluster = self.find_cluster(node)
+    def remove_cluster(self, path: ModulePath):
+        cluster = self.find_cluster(path)
         if not cluster:
             return
 
@@ -178,7 +178,7 @@ class Graph:
         focus_nodes = set()
 
         for node in input_nodes:
-            cluster = self.find_cluster(node)
+            cluster = self.find_cluster(node.path)
             if cluster:
                 focus_nodes |= set(cluster.descendant_nodes())
                 continue
