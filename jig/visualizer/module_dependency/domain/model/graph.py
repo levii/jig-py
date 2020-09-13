@@ -142,6 +142,32 @@ class Graph:
 
         return True
 
+    def _find_or_create_clusters(self, path: ModulePath) -> Cluster:
+        assert self.master_graph.has_module(path)
+
+        holder: Union[Graph, Cluster] = self
+        cluster = None
+        for i in range(1, path.path_level + 1):
+            cluster_path = path.path_in_depth(i)
+            cluster = next(
+                (
+                    cluster
+                    for cluster in holder.clusters.values()
+                    if cluster.module_path == cluster_path
+                ),
+                None,
+            )
+
+            if not cluster:
+                cluster = Cluster(module_path=cluster_path)
+                holder.add_cluster(cluster)
+
+            holder = cluster
+
+        assert cluster is not None
+
+        return cluster
+
     def _remove_node_from_cluster(self, node: ModuleNode):
         # Dict#values() で for を回しているときには、要素削除できないので、 List にキャストする
         for cluster in list(self.clusters.values()):
