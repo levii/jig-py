@@ -1,5 +1,5 @@
 import dataclasses
-from typing import List
+from typing import List, Optional
 
 
 @dataclasses.dataclass(frozen=True)
@@ -20,6 +20,11 @@ class ModulePath:
 
     def __lt__(self, other: "ModulePath"):
         return self.name < other.name
+
+    def parent(self) -> Optional["ModulePath"]:
+        if self.path_level == 1:
+            return None
+        return self.path_in_depth(self.path_level - 1)
 
     def belongs_to(self, other: "ModulePath") -> bool:
         if self.path_level < other.path_level:

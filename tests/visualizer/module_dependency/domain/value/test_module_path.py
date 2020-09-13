@@ -10,6 +10,13 @@ class TestModulePath:
         assert module_path("jig").parts == ["jig"]
         assert module_path("jig.collector").parts == ["jig", "collector"]
 
+    def test_parent(self):
+        assert module_path("jig").parent() is None
+        assert module_path("jig.collector").parent() == module_path("jig")
+        assert module_path("jig.collector.domain").parent() == module_path(
+            "jig.collector"
+        )
+
     def test_path_level(self):
         assert module_path("a").path_level == 1
         assert module_path("foo").path_level == 1
