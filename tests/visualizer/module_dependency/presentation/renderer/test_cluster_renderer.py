@@ -2,9 +2,14 @@ from graphviz import Digraph
 
 from jig.visualizer.module_dependency.domain.value.cluster import Cluster
 from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
+from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
 from jig.visualizer.module_dependency.presentation.renderer.cluster_renderer import (
     ClusterRenderer,
 )
+
+
+def path(name: str) -> ModulePath:
+    return ModulePath(name)
 
 
 def node(name: str) -> ModuleNode:
@@ -14,7 +19,8 @@ def node(name: str) -> ModuleNode:
 class TestClusterRenderer:
     def test_render(self):
         cluster = Cluster(
-            node=node("jig"), children={node("jig.collector"), node("jig.analyzer")},
+            module_path=path("jig"),
+            children={node("jig.collector"), node("jig.analyzer")},
         )
         renderer = ClusterRenderer(cluster=cluster)
 
@@ -26,9 +32,9 @@ class TestClusterRenderer:
         assert str(renderer.render()) == str(g)
 
     def test_render__clusters(self):
-        cluster = Cluster(node=node("jig"), children={node("jig.analyzer")})
+        cluster = Cluster(module_path=path("jig"), children={node("jig.analyzer")})
         sub_cluster = Cluster(
-            node=node("jig.collector"),
+            module_path=path("jig.collector"),
             children={node("jig.collector.application"), node("jig.collector.domain")},
         )
         cluster.add_cluster(sub_cluster)

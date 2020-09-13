@@ -14,8 +14,8 @@ class ClusterRenderer:
         return cls(cluster=cluster)
 
     def render(self) -> Digraph:
-        g = Digraph(name=f"cluster_{self.cluster.node.name}")
-        g.attr(label=self.cluster.node.name)
+        g = Digraph(name=f"cluster_{self.cluster.module_path.name}")
+        g.attr(label=self.cluster.module_path.name)
 
         for node in sorted(self.cluster.children):
             g.node(node.name)

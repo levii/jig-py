@@ -23,7 +23,9 @@ def edge(tail: str, head: str) -> ModuleEdge:
 
 
 def cluster(name: str, children: Set[str]) -> Cluster:
-    return Cluster(node=node(name), children=set([node(name) for name in children]))
+    return Cluster(
+        module_path=path(name), children=set([node(name) for name in children])
+    )
 
 
 class TestGraph:
@@ -90,7 +92,7 @@ class TestGraph:
             "clusters": {"pkg": {"nodes": ["A", "B"], "clusters": {}}},
         }
 
-        g.clusters[node("pkg")].add_cluster(cluster("pkg.child", {"C"}))
+        g.clusters[path("pkg")].add_cluster(cluster("pkg.child", {"C"}))
         assert g.to_dict() == {
             "nodes": ["A", "B"],
             "edges": [("A", "B")],

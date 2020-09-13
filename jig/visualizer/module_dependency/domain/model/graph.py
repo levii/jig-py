@@ -25,7 +25,7 @@ class Graph:
     master_graph: MasterGraph = dataclasses.field(default_factory=MasterGraph)
     nodes: Set[ModuleNode] = dataclasses.field(default_factory=set)
     edges: Set[ModuleEdge] = dataclasses.field(default_factory=set)
-    clusters: Dict[ModuleNode, Cluster] = dataclasses.field(default_factory=dict)
+    clusters: Dict[ModulePath, Cluster] = dataclasses.field(default_factory=dict)
 
     def __post_init__(self):
         self.reset()
@@ -48,7 +48,7 @@ class Graph:
         nodes = sorted([n.name for n in self.nodes])
         edges = sorted([(e.tail.name, e.head.name) for e in self.edges])
         clusters = dict(
-            [(node.name, cluster.to_dict()) for node, cluster in self.clusters.items()]
+            [(path.name, cluster.to_dict()) for path, cluster in self.clusters.items()]
         )
 
         return {"nodes": nodes, "edges": edges, "clusters": clusters}
@@ -63,7 +63,7 @@ class Graph:
 
     def find_cluster(self, node: ModuleNode) -> Optional[Cluster]:
         for cluster in self.clusters.values():
-            if cluster.node == node:
+            if cluster.module_path == node.path:
                 return cluster
 
             sub_cluster = cluster.find_cluster(node)
@@ -103,7 +103,7 @@ class Graph:
         for node in not_included:
             self.add_node(node)
 
-        self.clusters[cluster.node] = cluster
+        self.clusters[cluster.module_path] = cluster
 
     def has_cluster(self, node: ModuleNode) -> bool:
         if node in self.clusters:
@@ -140,7 +140,7 @@ class Graph:
             cluster.remove(node)
 
             if cluster.is_empty:
-                del self.clusters[cluster.node]
+                del self.clusters[cluster.module_path]
 
     def remove_cluster(self, node: ModuleNode):
         cluster = self.find_cluster(node)
@@ -326,7 +326,7 @@ class Graph:
         next_path_level: int,
         node_owner: Union["Graph", Cluster],
     ):
-        cluster = Cluster(node=node)
+        cluster = Cluster(module_path=node.path)
         for n in self.master_graph.find_nodes(node):
             new_node = n.limit_path_level(next_path_level)
             cluster.add(new_node)

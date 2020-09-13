@@ -13,10 +13,10 @@ def node(name: str) -> ModuleNode:
 
 class TestCluster:
     def test_is_empty(self):
-        c = Cluster(node=node("foo"))
+        c = Cluster(module_path=path("foo"))
         assert c.is_empty is True
 
-        child_cluster = Cluster(node=node("bar"))
+        child_cluster = Cluster(module_path=path("bar"))
         c.add_cluster(child_cluster)
 
         assert c.is_empty is True
@@ -25,10 +25,10 @@ class TestCluster:
         assert c.is_empty is False
 
     def test_list_all_modules(self):
-        c = Cluster(node=node("foo"), children={node("foo.foo")})
+        c = Cluster(module_path=path("foo"), children={node("foo.foo")})
         assert c.list_all_modules() == [path("foo"), path("foo.foo")]
 
-        child_cluster = Cluster(node=node("bar"), children={node("bar.bar")})
+        child_cluster = Cluster(module_path=path("bar"), children={node("bar.bar")})
         c.add_cluster(child_cluster)
 
         assert c.list_all_modules() == [
@@ -38,7 +38,9 @@ class TestCluster:
             path("foo.foo"),
         ]
 
-        grand_child_cluster = Cluster(node=node("buzz"), children={node("buzz.buzz")})
+        grand_child_cluster = Cluster(
+            module_path=path("buzz"), children={node("buzz.buzz")}
+        )
         child_cluster.add_cluster(grand_child_cluster)
         assert c.list_all_modules() == [
             path("bar"),
@@ -50,14 +52,14 @@ class TestCluster:
         ]
 
     def test_descendant_nodes(self):
-        c = Cluster(node=node("jig"))
+        c = Cluster(module_path=path("jig"))
         assert c.descendant_nodes() == []
 
         c.add(node("jig.cli"))
         assert c.descendant_nodes() == [node("jig.cli")]
 
         child_cluster = Cluster(
-            node=node("jig.collection"),
+            module_path=path("jig.collection"),
             children={node("jig.collector.domain"), node("jig.collector.application")},
         )
         c.add_cluster(child_cluster)
@@ -69,10 +71,11 @@ class TestCluster:
         ]
 
     def test_find_cluster(self):
-        c = Cluster(node=node("jig"), children={node("jig.cli")})
+        c = Cluster(module_path=path("jig"), children={node("jig.cli")})
 
         child_cluster = Cluster(
-            node=node("jig.collector"), children={node("jig.collector.application")}
+            module_path=path("jig.collector"),
+            children={node("jig.collector.application")},
         )
         c.add_cluster(child_cluster)
 
@@ -81,10 +84,11 @@ class TestCluster:
         assert c.find_cluster(node("jig.collector")) is child_cluster
 
     def test_find_node_owner(self):
-        c = Cluster(node=node("jig"), children={node("jig.cli")})
+        c = Cluster(module_path=path("jig"), children={node("jig.cli")})
 
         child_cluster = Cluster(
-            node=node("jig.collector"), children={node("jig.collector.application")}
+            module_path=path("jig.collector"),
+            children={node("jig.collector.application")},
         )
         c.add_cluster(child_cluster)
 
@@ -94,12 +98,12 @@ class TestCluster:
         assert c.find_node_owner(node("jig.collector.application")) == child_cluster
 
     def test_add(self):
-        c = Cluster(node=node("foo"))
+        c = Cluster(module_path=path("foo"))
         c.add(node=node("bar"))
         assert c.is_empty is False
 
     def test_remove(self):
-        c = Cluster(node=node("foo"), children={node("bar")})
+        c = Cluster(module_path=path("foo"), children={node("bar")})
         c.remove(node=node("bar"))
         assert c.is_empty is True
 
@@ -107,10 +111,11 @@ class TestCluster:
         assert c.is_empty is True
 
     def test_remove_with_child_cluster(self):
-        c = Cluster(node=node("jig"), children={node("jig.cli")})
+        c = Cluster(module_path=path("jig"), children={node("jig.cli")})
 
         child_cluster = Cluster(
-            node=node("jig.collector"), children={node("jig.collector.application")}
+            module_path=path("jig.collector"),
+            children={node("jig.collector.application")},
         )
         c.add_cluster(child_cluster)
 

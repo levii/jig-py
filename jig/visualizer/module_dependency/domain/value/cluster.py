@@ -7,9 +7,9 @@ from .module_node import ModuleNode
 
 @dataclasses.dataclass
 class Cluster:
-    node: ModuleNode
+    module_path: ModulePath
     children: Set[ModuleNode] = dataclasses.field(default_factory=set)
-    clusters: Dict[ModuleNode, "Cluster"] = dataclasses.field(default_factory=dict)
+    clusters: Dict[ModulePath, "Cluster"] = dataclasses.field(default_factory=dict)
 
     def to_dict(self) -> dict:
         nodes = sorted([n.name for n in self.children])
@@ -27,7 +27,7 @@ class Cluster:
         return all([cluster.is_empty for cluster in self.clusters.values()])
 
     def list_all_modules(self) -> List[ModulePath]:
-        modules = {self.node.path}
+        modules = {self.module_path}
         modules.update([node.path for node in self.children])
 
         for cluster in self.clusters.values():
@@ -51,7 +51,7 @@ class Cluster:
 
     def find_cluster(self, node: ModuleNode) -> Optional["Cluster"]:
         for cluster in self.clusters.values():
-            if cluster.node == node:
+            if cluster.module_path == node.path:
                 return cluster
 
             sub_cluster = cluster.find_cluster(node)
@@ -75,7 +75,7 @@ class Cluster:
         self.children.add(node)
 
     def add_cluster(self, cluster: "Cluster"):
-        self.clusters[cluster.node] = cluster
+        self.clusters[cluster.module_path] = cluster
 
     def remove(self, node: ModuleNode):
         if node in self.children:
@@ -84,7 +84,7 @@ class Cluster:
         for cluster in list(self.clusters.values()):
             cluster.remove(node)
             if cluster.is_empty:
-                del self.clusters[cluster.node]
+                del self.clusters[cluster.module_path]
 
     def hide_node(self, node: ModuleNode):
         if node in self.children:
