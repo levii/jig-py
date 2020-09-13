@@ -61,6 +61,14 @@ class Graph:
 
         return sorted(modules)
 
+    def list_all_nodes(self) -> List[ModuleNode]:
+        """Graphに含まれる全てのノードを返す（クラスタ自身はノードではないがクラスタ内のノードは含まれる）"""
+        nodes = set(self.nodes)
+        for cluster in self.clusters.values():
+            nodes.update(cluster.descendant_nodes())
+
+        return sorted(nodes)
+
     def find_cluster(self, path: ModulePath) -> Optional[Cluster]:
         for cluster in self.clusters.values():
             if cluster.module_path == path:

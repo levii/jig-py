@@ -284,6 +284,23 @@ class TestGraph:
             path("pkg.xxx"),
         ]
 
+    def test_list_all_nodes(self):
+        g = Graph()
+        g.add_edge(edge("A", "B"))
+        g.add_edge(edge("A", "C"))
+
+        cluster_a = cluster("pkg", {"A"})
+        cluster_b = cluster("pkg.xxx", {"B"})
+
+        cluster_a.add_cluster(cluster_b)
+        g.add_cluster(cluster_a)
+
+        assert g.list_all_nodes() == [
+            node("A"),
+            node("B"),
+            node("C"),
+        ]
+
     def test_is_removed_node(self):
         # クラスタ内クラスタの削除
         master_graph = MasterGraph.from_tuple_list(
