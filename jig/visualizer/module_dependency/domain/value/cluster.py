@@ -1,6 +1,7 @@
 import dataclasses
 from typing import Set, Dict, Optional, List
 
+from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
 from .module_node import ModuleNode
 
 
@@ -25,14 +26,14 @@ class Cluster:
 
         return all([cluster.is_empty for cluster in self.clusters.values()])
 
-    def list_all_nodes(self) -> List[ModuleNode]:
-        nodes = {self.node}
-        nodes.update(self.children)
+    def list_all_modules(self) -> List[ModulePath]:
+        modules = {self.node.path}
+        modules.update([node.path for node in self.children])
 
         for cluster in self.clusters.values():
-            nodes.update(cluster.list_all_nodes())
+            modules.update(cluster.list_all_modules())
 
-        return sorted(nodes)
+        return sorted(modules)
 
     def descendant_nodes(self) -> List[ModuleNode]:
         """

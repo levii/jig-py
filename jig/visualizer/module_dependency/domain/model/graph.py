@@ -12,6 +12,7 @@ from jig.visualizer.module_dependency.domain.value.module_node import (
     ModuleNode,
     ModuleNodeStyle,
 )
+from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
 from jig.visualizer.module_dependency.domain.value.penwidth import Color, PenWidth
 
 
@@ -52,13 +53,13 @@ class Graph:
 
         return {"nodes": nodes, "edges": edges, "clusters": clusters}
 
-    def list_all_nodes(self) -> List[ModuleNode]:
-        """クラスタも含めた全てのノードを返す"""
-        nodes = set(self.nodes)
+    def list_all_modules(self) -> List[ModulePath]:
+        """クラスタも含めたGraphに含まれる全てのモジュールパスを返す"""
+        modules = set([node.path for node in self.nodes])
         for cluster in self.clusters.values():
-            nodes.update(cluster.list_all_nodes())
+            modules.update(cluster.list_all_modules())
 
-        return sorted(nodes)
+        return sorted(modules)
 
     def find_cluster(self, node: ModuleNode) -> Optional[Cluster]:
         for cluster in self.clusters.values():
@@ -125,7 +126,7 @@ class Graph:
         self._remove_node_from_cluster(node)
 
     def is_removed_node(self, node: ModuleNode) -> bool:
-        if node in self.list_all_nodes():
+        if node.path in self.list_all_modules():
             return False
 
         if not self.master_graph.has_module(node.path):

@@ -7,6 +7,11 @@ from jig.visualizer.module_dependency.domain.model.master_graph import MasterGra
 from jig.visualizer.module_dependency.domain.value.cluster import Cluster
 from jig.visualizer.module_dependency.domain.value.module_edge import ModuleEdge
 from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
+from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
+
+
+def path(name: str) -> ModulePath:
+    return ModulePath(name)
 
 
 def node(name: str) -> ModuleNode:
@@ -260,7 +265,7 @@ class TestGraph:
             "clusters": {"jig": {"clusters": {}, "nodes": ["jig.cli"]}},
         }
 
-    def test_list_all_nodes(self):
+    def test_list_all_modules(self):
         g = Graph()
         g.add_edge(edge("A", "B"))
 
@@ -270,11 +275,11 @@ class TestGraph:
         cluster_a.add_cluster(cluster_b)
         g.add_cluster(cluster_a)
 
-        assert g.list_all_nodes() == [
-            node("A"),
-            node("B"),
-            node("pkg"),
-            node("pkg.xxx"),
+        assert g.list_all_modules() == [
+            path("A"),
+            path("B"),
+            path("pkg"),
+            path("pkg.xxx"),
         ]
 
     def test_is_removed_node(self):
