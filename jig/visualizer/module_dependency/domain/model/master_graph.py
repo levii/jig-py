@@ -6,6 +6,10 @@ from jig.visualizer.module_dependency.domain.value.module_edge import (
     ModuleEdgeCollection,
 )
 from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
+from jig.visualizer.module_dependency.domain.value.module_node_adjacent import (
+    ModuleNodeAdjacentGraph,
+)
+from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
 
 
 @dataclasses.dataclass
@@ -17,6 +21,39 @@ class MasterGraph:
     @classmethod
     def from_tuple_list(cls, edges: List[Tuple[str, str]]) -> "MasterGraph":
         return cls(ModuleEdgeCollection.from_tuple_list(edges))
+
+    def has_module(self, path: ModulePath) -> bool:
+        for edge in self.edges:
+            if any([node.path.belongs_to(path) for node in [edge.tail, edge.head]]):
+                return True
+
+        return False
+
+    def find_adjacent_graph(
+        self, node: ModuleNode
+    ) -> Optional[ModuleNodeAdjacentGraph]:
+        """指定されたノードに隣接するノードを持ったModuleNodeAdjacentを探して返す"""
+        if not self.has_module(node.path):
+            return None
+
+        outgoing_nodes = set()
+        incoming_nodes = set()
+        for edge in self.edges:
+            if edge.tail.belongs_to(node):
+                # ignore self inner edges
+                if not edge.head.belongs_to(node):
+                    outgoing_nodes.add(edge.head)
+
+            if edge.head.belongs_to(node):
+                # ignore self inner edges
+                if not edge.tail.belongs_to(node):
+                    incoming_nodes.add(edge.tail)
+
+        return ModuleNodeAdjacentGraph(
+            node=node,
+            incoming_nodes=sorted(incoming_nodes),
+            outgoing_nodes=sorted(outgoing_nodes),
+        )
 
     def find_parent_edge(self, edge: ModuleEdge) -> Optional[ModuleEdge]:
         return self.edges.find_parent_edge(edge=edge)

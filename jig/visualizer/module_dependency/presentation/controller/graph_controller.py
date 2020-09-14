@@ -2,7 +2,10 @@ import dataclasses
 
 from graphviz import Digraph
 
-from jig.visualizer.module_dependency.domain.model.graph import Graph
+from jig.visualizer.module_dependency.domain.model.graph import (
+    Graph,
+    InvalidRestoreTargetError,
+)
 from jig.visualizer.module_dependency.domain.model.master_graph import MasterGraph
 from jig.visualizer.module_dependency.domain.value.module_edge import (
     ModuleEdge,
@@ -37,7 +40,18 @@ class GraphController:
         for node_name in node_names:
             node = ModuleNode.from_str(node_name)
             self.graph.remove_node(node)
-            self.graph.remove_cluster(node)
+            self.graph.remove_cluster(node.path)
+        return self
+
+    def restore(self, *node_names: str) -> "GraphController":
+        for node_name in node_names:
+            node = ModuleNode.from_str(node_name)
+
+            try:
+                self.graph.restore_node(node)
+            except InvalidRestoreTargetError:
+                pass
+
         return self
 
     def focus(self, node_name: str, *extra_node_names: str) -> "GraphController":

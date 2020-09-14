@@ -2,11 +2,19 @@ from typing import Set
 
 import pytest
 
-from jig.visualizer.module_dependency.domain.model.graph import Graph
+from jig.visualizer.module_dependency.domain.model.graph import (
+    Graph,
+    InvalidRestoreTargetError,
+)
 from jig.visualizer.module_dependency.domain.model.master_graph import MasterGraph
 from jig.visualizer.module_dependency.domain.value.cluster import Cluster
 from jig.visualizer.module_dependency.domain.value.module_edge import ModuleEdge
 from jig.visualizer.module_dependency.domain.value.module_node import ModuleNode
+from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
+
+
+def path(name: str) -> ModulePath:
+    return ModulePath(name)
 
 
 def node(name: str) -> ModuleNode:
@@ -18,7 +26,9 @@ def edge(tail: str, head: str) -> ModuleEdge:
 
 
 def cluster(name: str, children: Set[str]) -> Cluster:
-    return Cluster(node=node(name), children=set([node(name) for name in children]))
+    return Cluster(
+        module_path=path(name), children=set([node(name) for name in children])
+    )
 
 
 class TestGraph:
@@ -33,9 +43,9 @@ class TestGraph:
         cluster_a.add_cluster(cluster_b)
         g.add_cluster(cluster_a)
 
-        assert g.find_cluster(node("x")) is None
-        assert g.find_cluster(node("pkg_A")) is cluster_a
-        assert g.find_cluster(node("pkg_B")) is cluster_b
+        assert g.find_cluster(path("x")) is None
+        assert g.find_cluster(path("pkg_A")) is cluster_a
+        assert g.find_cluster(path("pkg_B")) is cluster_b
 
     def test_find_node_owner(self):
         g = Graph()
@@ -85,7 +95,7 @@ class TestGraph:
             "clusters": {"pkg": {"nodes": ["A", "B"], "clusters": {}}},
         }
 
-        g.clusters[node("pkg")].add_cluster(cluster("pkg.child", {"C"}))
+        g.clusters[path("pkg")].add_cluster(cluster("pkg.child", {"C"}))
         assert g.to_dict() == {
             "nodes": ["A", "B"],
             "edges": [("A", "B")],
@@ -157,7 +167,7 @@ class TestGraph:
             "clusters": {"pkg": {"nodes": ["A"], "clusters": {}}},
         }
 
-        g.remove_cluster(node("pkg"))
+        g.remove_cluster(path("pkg"))
 
         assert g.to_dict() == {
             "nodes": ["B"],
@@ -166,7 +176,7 @@ class TestGraph:
         }
 
         # 冪等なこと
-        g.remove_cluster(node("pkg"))
+        g.remove_cluster(path("pkg"))
 
         assert g.to_dict() == {
             "nodes": ["B"],
@@ -212,7 +222,7 @@ class TestGraph:
             },
         }
 
-        g.remove_cluster(node("jig"))
+        g.remove_cluster(path("jig"))
         assert g.to_dict() == {"nodes": [], "edges": [], "clusters": {}}
 
     def test_remove_cluster__child_cluster(self):
@@ -253,12 +263,162 @@ class TestGraph:
             },
         }
 
-        g.remove_cluster(node("jig.collector"))
+        g.remove_cluster(path("jig.collector"))
         assert g.to_dict() == {
             "nodes": ["jig.cli"],
             "edges": [],
             "clusters": {"jig": {"clusters": {}, "nodes": ["jig.cli"]}},
         }
+
+    def test_restore(self):
+        # クラスタ内クラスタの削除
+        master_graph = MasterGraph.from_tuple_list(
+            [
+                ("jig.collector.application", "jig.collector.domain.source_code"),
+                ("jig.collector.application", "jig.collector.domain.source_file"),
+                (
+                    "jig.collector.domain.source_code",
+                    "jig.collector.domain.source_file",
+                ),
+                ("jig.cli.main", "jig.collector.application"),
+            ]
+        )
+        g = Graph(master_graph=master_graph)
+        g.dig(node("jig"))
+        g.dig(node("jig.collector"))
+        assert g.to_dict() == {
+            "nodes": ["jig.cli", "jig.collector.application", "jig.collector.domain"],
+            "edges": [
+                ("jig.cli", "jig.collector.application"),
+                ("jig.collector.application", "jig.collector.domain"),
+            ],
+            "clusters": {
+                "jig": {
+                    "clusters": {
+                        "jig.collector": {
+                            "nodes": [
+                                "jig.collector.application",
+                                "jig.collector.domain",
+                            ],
+                            "clusters": {},
+                        }
+                    },
+                    "nodes": ["jig.cli"],
+                },
+            },
+        }
+
+        # 存在しないノード
+        with pytest.raises(InvalidRestoreTargetError):
+            g.restore_node(node("invalid.node.name"))
+
+        # 削除されていないノード
+        with pytest.raises(InvalidRestoreTargetError):
+            g.restore_node(node("jig.cli"))
+
+        before_dict = g.to_dict()
+
+        # 接続先があるノードの復元
+        g.remove_node(node("jig.cli"))
+        g.restore_node(node("jig.cli"))
+        assert g.to_dict() == before_dict
+
+        # 接続元があるノードの復元
+        g.remove_node(node("jig.collector.domain"))
+        g.restore_node(node("jig.collector.domain"))
+        assert g.to_dict() == before_dict
+
+    def test_list_all_modules(self):
+        g = Graph()
+        g.add_edge(edge("A", "B"))
+
+        cluster_a = cluster("pkg", {"A"})
+        cluster_b = cluster("pkg.xxx", {"B"})
+
+        cluster_a.add_cluster(cluster_b)
+        g.add_cluster(cluster_a)
+
+        assert g.list_all_modules() == [
+            path("A"),
+            path("B"),
+            path("pkg"),
+            path("pkg.xxx"),
+        ]
+
+    def test_list_all_nodes(self):
+        g = Graph()
+        g.add_edge(edge("A", "B"))
+        g.add_edge(edge("A", "C"))
+
+        cluster_a = cluster("pkg", {"A"})
+        cluster_b = cluster("pkg.xxx", {"B"})
+
+        cluster_a.add_cluster(cluster_b)
+        g.add_cluster(cluster_a)
+
+        assert g.list_all_nodes() == [
+            node("A"),
+            node("B"),
+            node("C"),
+        ]
+
+    def test_is_removed_node(self):
+        # クラスタ内クラスタの削除
+        master_graph = MasterGraph.from_tuple_list(
+            [
+                ("jig.collector.application", "jig.collector.domain.source_code"),
+                ("jig.collector.application", "jig.collector.domain.source_file"),
+                (
+                    "jig.collector.domain.source_code",
+                    "jig.collector.domain.source_file",
+                ),
+                ("jig.cli.main", "jig.collector.application"),
+            ]
+        )
+        g = Graph(master_graph=master_graph)
+        g.dig(node("jig"))
+        g.dig(node("jig.collector"))
+        assert g.to_dict() == {
+            "nodes": ["jig.cli", "jig.collector.application", "jig.collector.domain"],
+            "edges": [
+                ("jig.cli", "jig.collector.application"),
+                ("jig.collector.application", "jig.collector.domain"),
+            ],
+            "clusters": {
+                "jig": {
+                    "clusters": {
+                        "jig.collector": {
+                            "nodes": [
+                                "jig.collector.application",
+                                "jig.collector.domain",
+                            ],
+                            "clusters": {},
+                        }
+                    },
+                    "nodes": ["jig.cli"],
+                },
+            },
+        }
+
+        assert g.is_removed_node(node("the.name.is.not.in.the.graph")) is False
+        assert g.is_removed_node(node("jig")) is False
+        assert g.is_removed_node(node("jig.cli")) is False
+        assert g.is_removed_node(node("jig.collector")) is False
+        assert g.is_removed_node(node("jig.collector.application")) is False
+        assert g.is_removed_node(node("jig.collector.domain")) is False
+
+        g.remove_node(node("jig.cli"))
+        assert g.is_removed_node(node("jig.cli")) is True
+        assert g.is_removed_node(node("jig")) is False
+
+        g.remove_node(node("jig.collector.application"))
+        assert g.is_removed_node(node("jig.collector.application")) is True
+        assert g.is_removed_node(node("jig.collector")) is False
+
+        g.remove_node(node("jig.collector.domain"))
+        assert g.is_removed_node(node("jig.collector.domain")) is True
+        assert g.is_removed_node(node("jig.collector")) is True
+        assert g.is_removed_node(node("jig")) is True
 
     def test_focus(self):
         g = Graph()

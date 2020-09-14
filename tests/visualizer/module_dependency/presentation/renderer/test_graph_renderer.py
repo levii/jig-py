@@ -10,9 +10,14 @@ from jig.visualizer.module_dependency.domain.value.module_node import (
     ModuleNode,
     ModuleNodeStyle,
 )
+from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
 from jig.visualizer.module_dependency.presentation.renderer.graph_renderer import (
     GraphRenderer,
 )
+
+
+def path(name: str) -> ModulePath:
+    return ModulePath(name)
 
 
 def node(name: str) -> ModuleNode:
@@ -25,9 +30,9 @@ def edge(tail: str, head: str) -> ModuleEdge:
 
 class TestGraphRenderer:
     def test_render(self):
-        cluster = Cluster(node=node("jig"), children={node("jig.analyzer")})
+        cluster = Cluster(module_path=path("jig"), children={node("jig.analyzer")})
         sub_cluster = Cluster(
-            node=node("jig.collector"),
+            module_path=path("jig.collector"),
             children={node("jig.collector.application"), node("jig.collector.domain")},
         )
         cluster.add_cluster(sub_cluster)

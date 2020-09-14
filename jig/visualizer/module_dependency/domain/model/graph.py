@@ -12,10 +12,17 @@ from jig.visualizer.module_dependency.domain.value.module_node import (
     ModuleNode,
     ModuleNodeStyle,
 )
+from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
 from jig.visualizer.module_dependency.domain.value.penwidth import Color, PenWidth
 
 
 class NodeNotFoundError(Exception):
+    pass
+
+
+class InvalidRestoreTargetError(Exception):
+    """リストアできない対象のノードが指定された場合の例外"""
+
     pass
 
 
@@ -24,7 +31,7 @@ class Graph:
     master_graph: MasterGraph = dataclasses.field(default_factory=MasterGraph)
     nodes: Set[ModuleNode] = dataclasses.field(default_factory=set)
     edges: Set[ModuleEdge] = dataclasses.field(default_factory=set)
-    clusters: Dict[ModuleNode, Cluster] = dataclasses.field(default_factory=dict)
+    clusters: Dict[ModulePath, Cluster] = dataclasses.field(default_factory=dict)
 
     def __post_init__(self):
         self.reset()
@@ -47,17 +54,33 @@ class Graph:
         nodes = sorted([n.name for n in self.nodes])
         edges = sorted([(e.tail.name, e.head.name) for e in self.edges])
         clusters = dict(
-            [(node.name, cluster.to_dict()) for node, cluster in self.clusters.items()]
+            [(path.name, cluster.to_dict()) for path, cluster in self.clusters.items()]
         )
 
         return {"nodes": nodes, "edges": edges, "clusters": clusters}
 
-    def find_cluster(self, node: ModuleNode) -> Optional[Cluster]:
+    def list_all_modules(self) -> List[ModulePath]:
+        """クラスタも含めたGraphに含まれる全てのモジュールパスを返す"""
+        modules = set([node.path for node in self.nodes])
         for cluster in self.clusters.values():
-            if cluster.node == node:
+            modules.update(cluster.list_all_modules())
+
+        return sorted(modules)
+
+    def list_all_nodes(self) -> List[ModuleNode]:
+        """Graphに含まれる全てのノードを返す（クラスタ自身はノードではないがクラスタ内のノードは含まれる）"""
+        nodes = set(self.nodes)
+        for cluster in self.clusters.values():
+            nodes.update(cluster.descendant_nodes())
+
+        return sorted(nodes)
+
+    def find_cluster(self, path: ModulePath) -> Optional[Cluster]:
+        for cluster in self.clusters.values():
+            if cluster.module_path == path:
                 return cluster
 
-            sub_cluster = cluster.find_cluster(node)
+            sub_cluster = cluster.find_cluster(path)
             if sub_cluster:
                 return sub_cluster
 
@@ -94,7 +117,7 @@ class Graph:
         for node in not_included:
             self.add_node(node)
 
-        self.clusters[cluster.node] = cluster
+        self.clusters[cluster.module_path] = cluster
 
     def has_cluster(self, node: ModuleNode) -> bool:
         if node in self.clusters:
@@ -116,16 +139,81 @@ class Graph:
 
         self._remove_node_from_cluster(node)
 
+    def is_removed_node(self, node: ModuleNode) -> bool:
+        if node.path in self.list_all_modules():
+            return False
+
+        if not self.master_graph.has_module(node.path):
+            return False
+
+        return True
+
+    def _find_or_create_clusters(self, path: ModulePath) -> Cluster:
+        assert self.master_graph.has_module(path)
+
+        holder: Union[Graph, Cluster] = self
+        cluster = None
+        for i in range(1, path.path_level + 1):
+            cluster_path = path.path_in_depth(i)
+            cluster = next(
+                (
+                    cluster
+                    for cluster in holder.clusters.values()
+                    if cluster.module_path == cluster_path
+                ),
+                None,
+            )
+
+            if not cluster:
+                cluster = Cluster(module_path=cluster_path)
+                holder.add_cluster(cluster)
+
+            holder = cluster
+
+        assert cluster is not None
+
+        return cluster
+
+    def restore_node(self, node: ModuleNode):
+        if not self.is_removed_node(node):
+            raise InvalidRestoreTargetError()
+
+        # 対象ノードの接続元/接続先ノードだけで構成されたグラフを取得
+        node_adjacent = self.master_graph.find_adjacent_graph(node)
+        if not node_adjacent:
+            return
+
+        # 現在自身に残っているノードに対してのエッジを復元する
+        current_nodes = self.list_all_nodes()
+
+        # ノードからの接続先エッジを復元
+        for outgoing_node in node_adjacent.outgoing_nodes:
+            for current_node in current_nodes:
+                if outgoing_node.belongs_to(current_node):
+                    self.add_edge(ModuleEdge(tail=node, head=current_node))
+
+        # ノードへの接続エッジを復元
+        for incoming_node in node_adjacent.incoming_nodes:
+            for current_node in current_nodes:
+                if incoming_node.belongs_to(current_node):
+                    self.add_edge(ModuleEdge(tail=current_node, head=node))
+
+        # クラスタ内のノードの場合はクラスタも復元した上でそこに追加する
+        parent_path = node.path.parent()
+        if parent_path:
+            cluster = self._find_or_create_clusters(parent_path)
+            cluster.add(node)
+
     def _remove_node_from_cluster(self, node: ModuleNode):
         # Dict#values() で for を回しているときには、要素削除できないので、 List にキャストする
         for cluster in list(self.clusters.values()):
             cluster.remove(node)
 
             if cluster.is_empty:
-                del self.clusters[cluster.node]
+                del self.clusters[cluster.module_path]
 
-    def remove_cluster(self, node: ModuleNode):
-        cluster = self.find_cluster(node)
+    def remove_cluster(self, path: ModulePath):
+        cluster = self.find_cluster(path)
         if not cluster:
             return
 
@@ -160,7 +248,7 @@ class Graph:
         focus_nodes = set()
 
         for node in input_nodes:
-            cluster = self.find_cluster(node)
+            cluster = self.find_cluster(node.path)
             if cluster:
                 focus_nodes |= set(cluster.descendant_nodes())
                 continue
@@ -308,7 +396,7 @@ class Graph:
         next_path_level: int,
         node_owner: Union["Graph", Cluster],
     ):
-        cluster = Cluster(node=node)
+        cluster = Cluster(module_path=node.path)
         for n in self.master_graph.find_nodes(node):
             new_node = n.limit_path_level(next_path_level)
             cluster.add(new_node)
