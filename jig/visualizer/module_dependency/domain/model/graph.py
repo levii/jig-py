@@ -20,6 +20,12 @@ class NodeNotFoundError(Exception):
     pass
 
 
+class InvalidRestoreTargetError(Exception):
+    """リストアできない対象のノードが指定された場合の例外"""
+
+    pass
+
+
 @dataclasses.dataclass
 class Graph:
     master_graph: MasterGraph = dataclasses.field(default_factory=MasterGraph)
@@ -167,6 +173,36 @@ class Graph:
         assert cluster is not None
 
         return cluster
+
+    def restore_node(self, node: ModuleNode):
+        if not self.is_removed_node(node):
+            raise InvalidRestoreTargetError()
+
+        # 対象ノードの接続元/接続先ノードだけで構成されたグラフを取得
+        node_adjacent = self.master_graph.find_adjacent_graph(node)
+        if not node_adjacent:
+            return
+
+        # 現在自身に残っているノードに対してのエッジを復元する
+        current_nodes = self.list_all_nodes()
+
+        # ノードからの接続先エッジを復元
+        for outgoing_node in node_adjacent.outgoing_nodes:
+            for current_node in current_nodes:
+                if outgoing_node.belongs_to(current_node):
+                    self.add_edge(ModuleEdge(tail=node, head=current_node))
+
+        # ノードへの接続エッジを復元
+        for incoming_node in node_adjacent.incoming_nodes:
+            for current_node in current_nodes:
+                if incoming_node.belongs_to(current_node):
+                    self.add_edge(ModuleEdge(tail=current_node, head=node))
+
+        # クラスタ内のノードの場合はクラスタも復元した上でそこに追加する
+        parent_path = node.path.parent()
+        if parent_path:
+            cluster = self._find_or_create_clusters(parent_path)
+            cluster.add(node)
 
     def _remove_node_from_cluster(self, node: ModuleNode):
         # Dict#values() で for を回しているときには、要素削除できないので、 List にキャストする

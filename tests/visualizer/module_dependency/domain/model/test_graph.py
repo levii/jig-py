@@ -2,7 +2,10 @@ from typing import Set
 
 import pytest
 
-from jig.visualizer.module_dependency.domain.model.graph import Graph
+from jig.visualizer.module_dependency.domain.model.graph import (
+    Graph,
+    InvalidRestoreTargetError,
+)
 from jig.visualizer.module_dependency.domain.model.master_graph import MasterGraph
 from jig.visualizer.module_dependency.domain.value.cluster import Cluster
 from jig.visualizer.module_dependency.domain.value.module_edge import ModuleEdge
@@ -266,6 +269,64 @@ class TestGraph:
             "edges": [],
             "clusters": {"jig": {"clusters": {}, "nodes": ["jig.cli"]}},
         }
+
+    def test_restore(self):
+        # クラスタ内クラスタの削除
+        master_graph = MasterGraph.from_tuple_list(
+            [
+                ("jig.collector.application", "jig.collector.domain.source_code"),
+                ("jig.collector.application", "jig.collector.domain.source_file"),
+                (
+                    "jig.collector.domain.source_code",
+                    "jig.collector.domain.source_file",
+                ),
+                ("jig.cli.main", "jig.collector.application"),
+            ]
+        )
+        g = Graph(master_graph=master_graph)
+        g.dig(node("jig"))
+        g.dig(node("jig.collector"))
+        assert g.to_dict() == {
+            "nodes": ["jig.cli", "jig.collector.application", "jig.collector.domain"],
+            "edges": [
+                ("jig.cli", "jig.collector.application"),
+                ("jig.collector.application", "jig.collector.domain"),
+            ],
+            "clusters": {
+                "jig": {
+                    "clusters": {
+                        "jig.collector": {
+                            "nodes": [
+                                "jig.collector.application",
+                                "jig.collector.domain",
+                            ],
+                            "clusters": {},
+                        }
+                    },
+                    "nodes": ["jig.cli"],
+                },
+            },
+        }
+
+        # 存在しないノード
+        with pytest.raises(InvalidRestoreTargetError):
+            g.restore_node(node("invalid.node.name"))
+
+        # 削除されていないノード
+        with pytest.raises(InvalidRestoreTargetError):
+            g.restore_node(node("jig.cli"))
+
+        before_dict = g.to_dict()
+
+        # 接続先があるノードの復元
+        g.remove_node(node("jig.cli"))
+        g.restore_node(node("jig.cli"))
+        assert g.to_dict() == before_dict
+
+        # 接続元があるノードの復元
+        g.remove_node(node("jig.collector.domain"))
+        g.restore_node(node("jig.collector.domain"))
+        assert g.to_dict() == before_dict
 
     def test_list_all_modules(self):
         g = Graph()
