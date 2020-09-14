@@ -50,7 +50,9 @@ class TestMasterGraph:
         assert m.find_adjacent_graph(node("none")) is None
 
         assert m.find_adjacent_graph(node("jig")) == ModuleNodeAdjacentGraph(
-            node=node("jig"), incoming_nodes=[], outgoing_nodes=[],
+            node=node("jig"),
+            incoming_nodes=[],
+            outgoing_nodes=[],
         )
 
         assert m.find_adjacent_graph(node("jig.cli")) == ModuleNodeAdjacentGraph(

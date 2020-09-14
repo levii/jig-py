@@ -26,7 +26,9 @@ import os, datetime
         """
 
         file = SourceFile(
-            source_file_path=self.SOURCE_FILE_PATH, content=content, size=len(content),
+            source_file_path=self.SOURCE_FILE_PATH,
+            content=content,
+            size=len(content),
         )
         ast = SourceCode.build(file)
 
@@ -39,7 +41,9 @@ import datetime as dt
         """
 
         file = SourceFile(
-            source_file_path=self.SOURCE_FILE_PATH, content=content, size=len(content),
+            source_file_path=self.SOURCE_FILE_PATH,
+            content=content,
+            size=len(content),
         )
         ast = SourceCode.build(file)
 
@@ -51,7 +55,9 @@ from os import path
         """
 
         file = SourceFile(
-            source_file_path=self.SOURCE_FILE_PATH, content=content, size=len(content),
+            source_file_path=self.SOURCE_FILE_PATH,
+            content=content,
+            size=len(content),
         )
         ast = SourceCode.build(file)
 
@@ -67,7 +73,9 @@ from .. import jig_ast
         """
 
         file = SourceFile(
-            source_file_path=self.SOURCE_FILE_PATH, content=content, size=len(content),
+            source_file_path=self.SOURCE_FILE_PATH,
+            content=content,
+            size=len(content),
         )
         ast = SourceCode.build(file)
 
