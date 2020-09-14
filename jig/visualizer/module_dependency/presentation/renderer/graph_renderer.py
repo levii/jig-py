@@ -3,6 +3,7 @@ import dataclasses
 from graphviz import Digraph
 
 from jig.visualizer.module_dependency.domain.model.graph import Graph
+from jig.visualizer.module_dependency.domain.value.node_style import NodeStyle
 from .cluster_renderer import ClusterRenderer
 
 
@@ -14,7 +15,10 @@ class GraphRenderer:
         d = Digraph()
 
         for node in sorted(self.graph.nodes):
-            node_options = node.style.to_dict()
+            module_node_style = self.graph.graph_style.find_node_style(node.path)
+            style = module_node_style.style if module_node_style else NodeStyle()
+
+            node_options = style.to_dict()
             # 描画する node の配下に位置する node が存在する場合には、 shape=rect として表示する
             if self.graph.child_node_exists(node):
                 node_options["shape"] = "rect"

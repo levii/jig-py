@@ -1,6 +1,7 @@
 import dataclasses
 from typing import Set, List, Dict, Optional, Union
 
+from jig.visualizer.module_dependency.domain.model.graph_style import GraphStyle
 from jig.visualizer.module_dependency.domain.model.master_graph import MasterGraph
 from jig.visualizer.module_dependency.domain.value.cluster import Cluster
 from jig.visualizer.module_dependency.domain.value.module_edge import (
@@ -12,6 +13,9 @@ from jig.visualizer.module_dependency.domain.value.module_node import (
     ModuleNode,
 )
 from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
+from jig.visualizer.module_dependency.domain.value.module_node_style import (
+    ModuleNodeStyle,
+)
 from jig.visualizer.module_dependency.domain.value.node_style import NodeStyle
 from jig.visualizer.module_dependency.domain.value.penwidth import Color, PenWidth
 
@@ -29,6 +33,7 @@ class InvalidRestoreTargetError(Exception):
 @dataclasses.dataclass
 class Graph:
     master_graph: MasterGraph = dataclasses.field(default_factory=MasterGraph)
+    graph_style: GraphStyle = dataclasses.field(default_factory=GraphStyle)
     nodes: Set[ModuleNode] = dataclasses.field(default_factory=set)
     edges: Set[ModuleEdge] = dataclasses.field(default_factory=set)
     clusters: Dict[ModulePath, Cluster] = dataclasses.field(default_factory=dict)
@@ -284,9 +289,10 @@ class Graph:
         node_style = NodeStyle(color=color, fontcolor=fontcolor, penwidth=penwidth)
         edge_style = EdgeStyle(color=color, fontcolor=fontcolor, penwidth=penwidth)
 
-        if node in self.nodes:
-            self.nodes.remove(node)
-            self.nodes.add(node.with_style(style=node_style))
+        if self.master_graph.has_module(node.path):
+            self.graph_style.add_node_style(
+                ModuleNodeStyle(module_path=node.path, style=node_style)
+            )
 
         edges = list(filter(lambda e: e.has_node(node), self.edges))
         for edge in edges:
@@ -314,6 +320,8 @@ class Graph:
         edges = [edge.reset_style() for edge in self.edges]
         self.edges.clear()
         self.edges.update(edges)
+
+        self.graph_style.reset_all_styles()
 
     def auto_highlight(self):
         source_nodes: Dict[ModuleNode, List[ModuleEdge]] = dict(
