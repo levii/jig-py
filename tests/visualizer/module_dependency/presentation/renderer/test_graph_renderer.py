@@ -5,13 +5,13 @@ from jig.visualizer.module_dependency.domain.model.master_graph import MasterGra
 from jig.visualizer.module_dependency.domain.value.cluster import Cluster
 from jig.visualizer.module_dependency.domain.value.module_edge import (
     ModuleEdge,
-    ModuleEdgeStyle,
 )
+from jig.visualizer.module_dependency.domain.value.edge_style import EdgeStyle
 from jig.visualizer.module_dependency.domain.value.module_node import (
     ModuleNode,
-    ModuleNodeStyle,
 )
 from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
+from jig.visualizer.module_dependency.domain.value.node_style import NodeStyle
 from jig.visualizer.module_dependency.domain.value.penwidth import Color, PenWidth
 from jig.visualizer.module_dependency.presentation.renderer.graph_renderer import (
     GraphRenderer,
@@ -47,11 +47,11 @@ class TestGraphRenderer:
 
         g = Digraph()
 
-        node_style = ModuleNodeStyle().to_dict()
+        node_style = NodeStyle().to_dict()
         g.node("jig.analyzer", **node_style)
         g.node("jig.collector", **node_style)
 
-        edge_style = ModuleEdgeStyle().to_dict()
+        edge_style = EdgeStyle().to_dict()
         g.edge("jig.analyzer", "jig.collector", **edge_style)
 
         child = Digraph(name="cluster_jig")
@@ -78,8 +78,8 @@ class TestGraphRenderer:
         renderer = GraphRenderer(graph=graph)
 
         g = Digraph()
-        default_node_style = ModuleNodeStyle().to_dict()
-        node_style = ModuleNodeStyle().to_dict()
+        default_node_style = NodeStyle().to_dict()
+        node_style = NodeStyle().to_dict()
         node_style.update(
             {
                 "color": "blue",
@@ -91,7 +91,7 @@ class TestGraphRenderer:
         g.node("b", **node_style)
         g.node("c", **default_node_style)
 
-        edge_style = ModuleEdgeStyle().to_dict()
+        edge_style = EdgeStyle().to_dict()
         edge_style.update(
             {
                 "color": "blue",
@@ -112,13 +112,13 @@ class TestGraphRenderer:
         renderer = GraphRenderer(graph=graph)
 
         g = Digraph()
-        default_node_style = ModuleNodeStyle().to_dict()
+        default_node_style = NodeStyle().to_dict()
         g.node("a", **default_node_style)
         g.node("b", **default_node_style)
         g.node("c", **default_node_style)
 
-        default_edge_style = ModuleEdgeStyle().to_dict()
-        edge_style = ModuleEdgeStyle().to_dict()
+        default_edge_style = EdgeStyle().to_dict()
+        edge_style = EdgeStyle().to_dict()
         edge_style.update({"color": "red", "penwidth": PenWidth.to_size(PenWidth.Thin)})
         g.edge("a", "b", **edge_style)
         g.edge("b", "c", **default_edge_style)
@@ -136,12 +136,12 @@ class TestGraphRenderer:
         renderer = GraphRenderer(graph=graph)
 
         g = Digraph()
-        default_node_style = ModuleNodeStyle().to_dict()
+        default_node_style = NodeStyle().to_dict()
         g.node("a", **default_node_style)
         g.node("b", **default_node_style)
         g.node("c", **default_node_style)
 
-        default_edge_style = ModuleEdgeStyle().to_dict()
+        default_edge_style = EdgeStyle().to_dict()
         g.edge("a", "b", **default_edge_style)
         g.edge("b", "c", **default_edge_style)
 

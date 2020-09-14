@@ -1,52 +1,15 @@
 import dataclasses
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, List, Tuple
 
-from .penwidth import Color, PenWidth
+from jig.visualizer.module_dependency.domain.value.edge_style import EdgeStyle
 from .module_node import ModuleNode
-
-
-@dataclasses.dataclass(frozen=True)
-class ModuleEdgeStyle:
-    color: Color = dataclasses.field(default=Color.Black)
-    fontcolor: Color = dataclasses.field(default=Color.Black)
-    penwidth: PenWidth = dataclasses.field(default=PenWidth.Normal)
-    filled: bool = False
-    invisible: bool = False
-
-    def to_dict(self) -> Dict[str, str]:
-        return {
-            "color": self.color.value,
-            "fontcolor": self.fontcolor.value,
-            "penwidth": self.penwidth.to_size(self.penwidth),
-            "style": self.style,
-            "dir": self.dir,
-        }
-
-    @property
-    def dir(self) -> str:
-        # invisible edge の場合には、無向グラフとして振る舞う
-        # (style="invisible" としても矢印が残ってしまうので)
-        if self.invisible:
-            return "none"
-        return "directed"
-
-    @property
-    def style(self) -> str:
-        if self.invisible:
-            return "invisible"
-        if self.filled:
-            return "filled"
-
-        return ""
 
 
 @dataclasses.dataclass(frozen=True)
 class ModuleEdge:
     tail: ModuleNode
     head: ModuleNode
-    style: ModuleEdgeStyle = dataclasses.field(
-        default_factory=ModuleEdgeStyle, compare=False
-    )
+    style: EdgeStyle = dataclasses.field(default_factory=EdgeStyle, compare=False)
 
     @classmethod
     def from_str(cls, tail: str, head: str) -> "ModuleEdge":
@@ -54,9 +17,9 @@ class ModuleEdge:
 
     @classmethod
     def build(
-        cls, tail: ModuleNode, head: ModuleNode, style: Optional[ModuleEdgeStyle] = None
+        cls, tail: ModuleNode, head: ModuleNode, style: Optional[EdgeStyle] = None
     ) -> "ModuleEdge":
-        return cls(tail=tail, head=head, style=style or ModuleEdgeStyle())
+        return cls(tail=tail, head=head, style=style or EdgeStyle())
 
     def belongs_to(self, other: "ModuleEdge") -> bool:
         return self.tail.belongs_to(other.tail) and self.head.belongs_to(other.head)
@@ -85,10 +48,10 @@ class ModuleEdge:
 
     def to_invisible(self) -> "ModuleEdge":
         return self.build(
-            tail=self.tail, head=self.head, style=ModuleEdgeStyle(invisible=True)
+            tail=self.tail, head=self.head, style=EdgeStyle(invisible=True)
         )
 
-    def with_style(self, style: ModuleEdgeStyle) -> "ModuleEdge":
+    def with_style(self, style: EdgeStyle) -> "ModuleEdge":
         return self.build(tail=self.tail, head=self.head, style=style)
 
     def reset_style(self) -> "ModuleEdge":
