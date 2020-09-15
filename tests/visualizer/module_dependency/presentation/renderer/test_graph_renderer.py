@@ -146,3 +146,42 @@ class TestGraphRenderer:
         g.edge("b", "c", **default_edge_style)
 
         assert str(renderer.render()) == str(g)
+
+    def test_render__with_autohighlight(self):
+        # +---+    +---+    +---+    +---+
+        # |   |    |   |--->|   |    |   |
+        # | a |--->| b |    | c |--->| d |
+        # |   |    |   |<---|   |    |   |
+        # +---+    +---+    +---+    +---+
+        master_graph = MasterGraph.from_tuple_list(
+            [("a", "b"), ("b", "c"), ("c", "b"), ("c", "d")]
+        )
+        graph = Graph(master_graph)
+        renderer = GraphRenderer(graph=graph)
+
+        graph.auto_highlight()
+
+        g = Digraph()
+
+        default_node_style = NodeStyle().to_dict()
+        entry_point_node_style = NodeStyle(
+            color=Color.Teal, fontcolor=Color.White, filled=True
+        ).to_dict()
+        fundamental_node_style = NodeStyle(
+            color=Color.Purple, fontcolor=Color.White, filled=True
+        ).to_dict()
+        g.node("a", **entry_point_node_style)
+        g.node("b", **default_node_style)
+        g.node("c", **default_node_style)
+        g.node("d", **fundamental_node_style)
+
+        default_edge_style = EdgeStyle().to_dict()
+        warning_edge_style = EdgeStyle(
+            color=Color.Red, penwidth=PenWidth.Bold
+        ).to_dict()
+        g.edge("a", "b", **default_edge_style)
+        g.edge("b", "c", **warning_edge_style)
+        g.edge("c", "b", **warning_edge_style)
+        g.edge("c", "d", **default_edge_style)
+
+        assert str(renderer.render()) == str(g)

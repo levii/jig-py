@@ -38,10 +38,10 @@ class ModuleEdge:
         return ModuleEdge(tail=new_tail, head=new_head)
 
     def __lt__(self, other: "ModuleEdge"):
-        if self.head == other.head:
-            return self.tail < other.tail
+        if self.tail == other.tail:
+            return self.head < other.head
 
-        return self.head < other.head
+        return self.tail < other.tail
 
     def build_reverse(self) -> "ModuleEdge":
         return self.build(tail=self.head, head=self.tail, style=self.style)
