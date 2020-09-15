@@ -9,6 +9,9 @@ from jig.visualizer.module_dependency.domain.value.module_edge import (
     ModuleEdgeCollection,
 )
 from jig.visualizer.module_dependency.domain.value.edge_style import EdgeStyle
+from jig.visualizer.module_dependency.domain.value.module_edge_style import (
+    ModuleEdgeStyle,
+)
 from jig.visualizer.module_dependency.domain.value.module_node import (
     ModuleNode,
 )
@@ -296,21 +299,20 @@ class Graph:
 
         edges = list(filter(lambda e: e.has_node(node), self.edges))
         for edge in edges:
-            self.edges.remove(edge)
-            self.edges.add(edge.with_style(style=edge_style))
+            self.graph_style.add_edge_style(
+                ModuleEdgeStyle(
+                    tail=edge.tail.path, head=edge.head.path, style=edge_style
+                )
+            )
 
     def edge_style(
         self, tail: ModuleNode, head: ModuleNode, color: Color, penwidth: PenWidth
     ):
         edge_style = EdgeStyle(color=color, penwidth=penwidth)
-        e = ModuleEdge(tail=tail, head=head)
 
-        edges = [
-            edge.with_style(edge_style) if edge.belongs_to(e) else edge
-            for edge in self.edges
-        ]
-        self.edges.clear()
-        self.edges.update(edges)
+        self.graph_style.add_edge_style(
+            ModuleEdgeStyle(tail=tail.path, head=head.path, style=edge_style)
+        )
 
     def reset_style(self) -> None:
         nodes = [node.reset_style() for node in self.nodes]
