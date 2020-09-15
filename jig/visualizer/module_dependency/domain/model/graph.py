@@ -331,12 +331,12 @@ class Graph:
             [(node, []) for node in self.nodes]
         )
         for edge in self.edges:
-            source_nodes[edge.tail].append(edge)
-            dest_nodes[edge.head].append(edge)
+            dest_nodes[edge.tail].append(edge)
+            source_nodes[edge.head].append(edge)
 
         # entrypoint
         entrypoint_node_style = NodeStyle(
-            color=Color.Purple, fontcolor=Color.White, filled=True
+            color=Color.Teal, fontcolor=Color.White, filled=True
         )
         for node, edges in source_nodes.items():
             if len(edges) == 0:
@@ -345,7 +345,7 @@ class Graph:
 
         # fundamental
         fundamental_node_style = NodeStyle(
-            color=Color.Teal, fontcolor=Color.White, filled=True
+            color=Color.Purple, fontcolor=Color.White, filled=True
         )
         for node, edges in dest_nodes.items():
             if len(edges) == 0:
