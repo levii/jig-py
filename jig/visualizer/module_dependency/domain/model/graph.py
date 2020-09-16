@@ -1,18 +1,25 @@
 import dataclasses
 from typing import Set, List, Dict, Optional, Union
 
+from jig.visualizer.module_dependency.domain.model.graph_style import GraphStyle
 from jig.visualizer.module_dependency.domain.model.master_graph import MasterGraph
 from jig.visualizer.module_dependency.domain.value.cluster import Cluster
 from jig.visualizer.module_dependency.domain.value.module_edge import (
     ModuleEdge,
     ModuleEdgeCollection,
+)
+from jig.visualizer.module_dependency.domain.value.edge_style import EdgeStyle
+from jig.visualizer.module_dependency.domain.value.module_edge_style import (
     ModuleEdgeStyle,
 )
 from jig.visualizer.module_dependency.domain.value.module_node import (
     ModuleNode,
-    ModuleNodeStyle,
 )
 from jig.visualizer.module_dependency.domain.value.module_path import ModulePath
+from jig.visualizer.module_dependency.domain.value.module_node_style import (
+    ModuleNodeStyle,
+)
+from jig.visualizer.module_dependency.domain.value.node_style import NodeStyle
 from jig.visualizer.module_dependency.domain.value.penwidth import Color, PenWidth
 
 
@@ -29,6 +36,7 @@ class InvalidRestoreTargetError(Exception):
 @dataclasses.dataclass
 class Graph:
     master_graph: MasterGraph = dataclasses.field(default_factory=MasterGraph)
+    graph_style: GraphStyle = dataclasses.field(default_factory=GraphStyle)
     nodes: Set[ModuleNode] = dataclasses.field(default_factory=set)
     edges: Set[ModuleEdge] = dataclasses.field(default_factory=set)
     clusters: Dict[ModulePath, Cluster] = dataclasses.field(default_factory=dict)
@@ -281,34 +289,30 @@ class Graph:
     def style(
         self, node: ModuleNode, color: Color, fontcolor: Color, penwidth: PenWidth
     ):
-        node_style = ModuleNodeStyle(
-            color=color, fontcolor=fontcolor, penwidth=penwidth
-        )
-        edge_style = ModuleEdgeStyle(
-            color=color, fontcolor=fontcolor, penwidth=penwidth
-        )
+        node_style = NodeStyle(color=color, fontcolor=fontcolor, penwidth=penwidth)
+        edge_style = EdgeStyle(color=color, fontcolor=fontcolor, penwidth=penwidth)
 
-        if node in self.nodes:
-            self.nodes.remove(node)
-            self.nodes.add(node.with_style(style=node_style))
+        if self.master_graph.has_module(node.path):
+            self.graph_style.add_node_style(
+                ModuleNodeStyle(module_path=node.path, style=node_style)
+            )
 
         edges = list(filter(lambda e: e.has_node(node), self.edges))
         for edge in edges:
-            self.edges.remove(edge)
-            self.edges.add(edge.with_style(style=edge_style))
+            self.graph_style.add_edge_style(
+                ModuleEdgeStyle(
+                    tail=edge.tail.path, head=edge.head.path, style=edge_style
+                )
+            )
 
     def edge_style(
         self, tail: ModuleNode, head: ModuleNode, color: Color, penwidth: PenWidth
     ):
-        edge_style = ModuleEdgeStyle(color=color, penwidth=penwidth)
-        e = ModuleEdge(tail=tail, head=head)
+        edge_style = EdgeStyle(color=color, penwidth=penwidth)
 
-        edges = [
-            edge.with_style(edge_style) if edge.belongs_to(e) else edge
-            for edge in self.edges
-        ]
-        self.edges.clear()
-        self.edges.update(edges)
+        self.graph_style.add_edge_style(
+            ModuleEdgeStyle(tail=tail.path, head=head.path, style=edge_style)
+        )
 
     def reset_style(self) -> None:
         nodes = [node.reset_style() for node in self.nodes]
@@ -319,6 +323,8 @@ class Graph:
         self.edges.clear()
         self.edges.update(edges)
 
+        self.graph_style.reset_all_styles()
+
     def auto_highlight(self):
         source_nodes: Dict[ModuleNode, List[ModuleEdge]] = dict(
             [(node, []) for node in self.nodes]
@@ -327,12 +333,12 @@ class Graph:
             [(node, []) for node in self.nodes]
         )
         for edge in self.edges:
-            source_nodes[edge.tail].append(edge)
-            dest_nodes[edge.head].append(edge)
+            dest_nodes[edge.tail].append(edge)
+            source_nodes[edge.head].append(edge)
 
         # entrypoint
-        entrypoint_node_style = ModuleNodeStyle(
-            color=Color.Purple, fontcolor=Color.White, filled=True
+        entrypoint_node_style = NodeStyle(
+            color=Color.Teal, fontcolor=Color.White, filled=True
         )
         for node, edges in source_nodes.items():
             if len(edges) == 0:
@@ -340,8 +346,8 @@ class Graph:
                 self.nodes.add(node.with_style(style=entrypoint_node_style))
 
         # fundamental
-        fundamental_node_style = ModuleNodeStyle(
-            color=Color.Teal, fontcolor=Color.White, filled=True
+        fundamental_node_style = NodeStyle(
+            color=Color.Purple, fontcolor=Color.White, filled=True
         )
         for node, edges in dest_nodes.items():
             if len(edges) == 0:
@@ -349,9 +355,7 @@ class Graph:
                 self.nodes.add(node.with_style(style=fundamental_node_style))
 
         # both reference
-        both_reference_edge_style = ModuleEdgeStyle(
-            color=Color.Red, penwidth=PenWidth.Bold
-        )
+        both_reference_edge_style = EdgeStyle(color=Color.Red, penwidth=PenWidth.Bold)
         for edge in self.edges:
             reverse = edge.build_reverse()
             if reverse in self.edges:
