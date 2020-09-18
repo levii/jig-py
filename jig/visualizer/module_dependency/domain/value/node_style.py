@@ -23,6 +23,9 @@ class NodeStyle:
     def _clone(self, **changes) -> "NodeStyle":
         return dataclasses.replace(self, **changes)
 
+    def with_invisible(self, invisible: bool) -> "NodeStyle":
+        return self._clone(invisible=invisible)
+
     def with_penwidth(self, penwidth: PenWidth) -> "NodeStyle":
         return self._clone(penwidth=penwidth)
 

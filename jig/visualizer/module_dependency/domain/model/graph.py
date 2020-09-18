@@ -2,6 +2,7 @@ import dataclasses
 from typing import Set, List, Dict, Optional, Union
 
 from jig.visualizer.module_dependency.domain.model.graph_style import GraphStyle
+from jig.visualizer.module_dependency.domain.model.hide_filter import HideFilter
 from jig.visualizer.module_dependency.domain.model.master_graph import MasterGraph
 from jig.visualizer.module_dependency.domain.value.cluster import Cluster
 from jig.visualizer.module_dependency.domain.value.module_edge import (
@@ -37,6 +38,7 @@ class InvalidRestoreTargetError(Exception):
 class Graph:
     master_graph: MasterGraph = dataclasses.field(default_factory=MasterGraph)
     graph_style: GraphStyle = dataclasses.field(default_factory=GraphStyle)
+    hide_filter: HideFilter = dataclasses.field(default_factory=HideFilter)
     nodes: Set[ModuleNode] = dataclasses.field(default_factory=set)
     edges: Set[ModuleEdge] = dataclasses.field(default_factory=set)
     clusters: Dict[ModulePath, Cluster] = dataclasses.field(default_factory=dict)
@@ -48,6 +50,8 @@ class Graph:
         self.nodes.clear()
         self.edges.clear()
         self.clusters.clear()
+        self.graph_style.reset_all_styles()
+        self.hide_filter.reset()
 
         # トップレベルの依存関係をGraphに追加する
         for edge in self.master_graph.edges:
@@ -274,17 +278,7 @@ class Graph:
         return self.master_graph.child_node_exists(node)
 
     def hide_node(self, node: ModuleNode):
-        if node in self.nodes:
-            self.nodes.remove(node)
-            self.nodes.add(node.to_invisible())
-
-        edges = list(filter(lambda e: e.has_node(node), self.edges))
-        for edge in edges:
-            self.edges.remove(edge)
-            self.edges.add(edge.to_invisible())
-
-        for cluster in self.clusters.values():
-            cluster.hide_node(node)
+        self.hide_filter.add_node(node)
 
     def style(
         self, node: ModuleNode, color: Color, fontcolor: Color, penwidth: PenWidth

@@ -37,3 +37,9 @@ class EdgeStyle:
             return "filled"
 
         return ""
+
+    def _clone(self, **changes) -> "EdgeStyle":
+        return dataclasses.replace(self, **changes)
+
+    def with_invisible(self, invisible: bool) -> "EdgeStyle":
+        return self._clone(invisible=invisible)
