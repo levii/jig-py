@@ -185,3 +185,37 @@ class TestGraphRenderer:
         g.edge("c", "d", **default_edge_style)
 
         assert str(renderer.render()) == str(g)
+
+    def test_render__with_hidden_node(self):
+        # +---+    +---+    +---+
+        # |   |--->| b |--->|   |
+        # |   |    +---+    |   |
+        # | a |             | d |
+        # |   |    +---+    |   |
+        # |   |--->| c |--->|   |
+        # +---+    +---+    +---+
+        master_graph = MasterGraph.from_tuple_list(
+            [("a", "b"), ("a", "c"), ("b", "d"), ("c", "d")]
+        )
+        graph = Graph(master_graph)
+        renderer = GraphRenderer(graph=graph)
+
+        graph.hide_node(node("b"))
+
+        g = Digraph()
+
+        default_node_style = NodeStyle().to_dict()
+        hidden_node_style = NodeStyle(invisible=True).to_dict()
+        g.node("a", **default_node_style)
+        g.node("b", **hidden_node_style)
+        g.node("c", **default_node_style)
+        g.node("d", **default_node_style)
+
+        default_edge_style = EdgeStyle().to_dict()
+        hidden_edge_style = EdgeStyle(invisible=True).to_dict()
+        g.edge("a", "b", **hidden_edge_style)
+        g.edge("a", "c", **default_edge_style)
+        g.edge("b", "d", **hidden_edge_style)
+        g.edge("c", "d", **default_edge_style)
+
+        assert str(renderer.render()) == str(g)
